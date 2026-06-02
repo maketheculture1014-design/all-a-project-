@@ -1,0 +1,9 @@
+.env
+.state.json
+inbox/**/*
+!inbox/**/.gitkeep
+archive/**/*
+!archive/.gitkeep
+__pycache__/
+*.pyc
+.venv/
