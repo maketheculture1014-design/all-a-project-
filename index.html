@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>올 A 프로젝트 · AI 3개로 중간·기말 정복하기</title>
+<meta name="description" content="노트북LM·제미나이·클로드 3개의 AI로 중학교 모든 시험 올 A 받기. 날짜별 학습 플랜, 개념학습 5단계, 복붙 프롬프트까지." />
+<style>
+  :root{
+    --bg:#0f1220; --bg2:#161a2e; --card:#1b2040; --card2:#232a52;
+    --ink:#eef1ff; --sub:#aab2e0; --muted:#7d86b8;
+    --brand:#7c8cff; --brand2:#56e0c8; --warn:#ffd166; --danger:#ff7a9c;
+    --ok:#56e0c8; --line:rgba(255,255,255,.10);
+    --notebook:#f6a93b; --gemini:#5b8cff; --claude:#d97757;
+    --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+    color:var(--ink); background:linear-gradient(180deg,#0e1020,#12152b 40%,#0e1020);
+    line-height:1.7; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand2); text-decoration:none}
+  h1,h2,h3,h4{line-height:1.3; margin:0 0 .4em}
+  section{padding:72px 20px; max-width:1080px; margin:0 auto}
+  .eyebrow{color:var(--brand2); font-weight:800; letter-spacing:.12em; font-size:.8rem; text-transform:uppercase}
+  .lead{color:var(--sub); font-size:1.06rem; max-width:760px}
+  .muted{color:var(--muted)}
+
+  /* NAV */
+  header.nav{
+    position:sticky; top:0; z-index:50; backdrop-filter:blur(12px);
+    background:rgba(13,15,30,.78); border-bottom:1px solid var(--line);
+  }
+  .nav-in{max-width:1080px; margin:0 auto; display:flex; align-items:center; gap:18px; padding:12px 20px}
+  .logo{font-weight:900; font-size:1.05rem; letter-spacing:-.02em}
+  .logo b{color:var(--brand2)}
+  .nav-links{display:flex; gap:6px; margin-left:auto; flex-wrap:wrap}
+  .nav-links a{
+    color:var(--sub); font-weight:600; font-size:.86rem; padding:7px 11px; border-radius:10px;
+  }
+  .nav-links a:hover{color:#fff; background:var(--card)}
+  @media(max-width:760px){ .nav-links{display:none} }
+
+  /* HERO */
+  .hero{padding-top:54px; text-align:center}
+  .badge{
+    display:inline-flex; gap:8px; align-items:center; background:var(--card); border:1px solid var(--line);
+    padding:7px 14px; border-radius:999px; font-size:.84rem; color:var(--sub); font-weight:600;
+  }
+  .hero h1{
+    font-size:clamp(2rem,5.4vw,3.5rem); letter-spacing:-.03em; margin:.5em auto .3em; max-width:880px;
+    background:linear-gradient(120deg,#fff,#9fb0ff 60%,#56e0c8); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero .lead{margin:0 auto 26px}
+  .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:.95rem;
+    padding:13px 22px; border-radius:12px; cursor:pointer; border:1px solid transparent;
+  }
+  .btn.primary{background:linear-gradient(120deg,var(--brand),#9a7cff); color:#0d1022; box-shadow:var(--shadow)}
+  .btn.ghost{background:transparent; border-color:var(--line); color:var(--ink)}
+  .btn:hover{transform:translateY(-2px); transition:.15s}
+  .stat-row{display:flex; gap:30px; justify-content:center; flex-wrap:wrap; margin-top:42px}
+  .stat b{display:block; font-size:1.7rem; color:#fff}
+  .stat span{color:var(--muted); font-size:.85rem}
+
+  /* CARDS */
+  .grid{display:grid; gap:18px}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){ .g3,.g2{grid-template-columns:1fr} }
+  .card{
+    background:linear-gradient(180deg,var(--card),var(--bg2)); border:1px solid var(--line);
+    border-radius:var(--radius); padding:24px; box-shadow:var(--shadow);
+  }
+  .card h3{font-size:1.2rem}
+  .pill{display:inline-block; font-size:.72rem; font-weight:800; padding:4px 10px; border-radius:999px; letter-spacing:.02em}
+
+  .ai-card{position:relative; overflow:hidden}
+  .ai-card .top{display:flex; align-items:center; gap:12px; margin-bottom:6px}
+  .ai-ico{width:46px; height:46px; border-radius:13px; display:grid; place-items:center; font-size:1.4rem; font-weight:900; color:#0d1022}
+  .ai-notebook{background:var(--notebook)}
+  .ai-gemini{background:var(--gemini); color:#fff}
+  .ai-claude{background:var(--claude); color:#fff}
+  .ai-card ul{margin:.5em 0 0; padding-left:1.1em; color:var(--sub); font-size:.92rem}
+  .ai-card ul li{margin:.3em 0}
+  .ver{font-size:.78rem; color:var(--muted); margin-top:14px; border-top:1px dashed var(--line); padding-top:12px}
+  .ver b{color:var(--brand2)}
+
+  /* STEP */
+  .step{display:flex; gap:18px; align-items:flex-start; margin-bottom:14px}
+  .step .num{
+    flex:0 0 46px; height:46px; border-radius:14px; display:grid; place-items:center; font-weight:900; font-size:1.2rem;
+    background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#0d1022;
+  }
+  .step .body{flex:1}
+  .step .body h3{margin-bottom:.2em}
+  .tag{font-size:.74rem; font-weight:800; padding:3px 9px; border-radius:7px; margin-right:6px}
+  .t-note{background:rgba(246,169,59,.18); color:#ffce86}
+  .t-gem{background:rgba(91,140,255,.2); color:#a8c0ff}
+  .t-cla{background:rgba(217,119,87,.2); color:#ffb597}
+  .t-book{background:rgba(86,224,200,.16); color:#8ff0dd}
+
+  /* PROMPT BOX */
+  .prompt{
+    background:#0c0f1e; border:1px solid var(--line); border-radius:14px; margin-top:14px; overflow:hidden;
+  }
+  .prompt .ph{display:flex; align-items:center; gap:8px; padding:10px 14px; background:rgba(255,255,255,.03); border-bottom:1px solid var(--line)}
+  .prompt .ph .dot{width:10px;height:10px;border-radius:50%}
+  .prompt .ph .name{font-size:.8rem; font-weight:700; color:var(--sub)}
+  .prompt .ph .copy{margin-left:auto; font-size:.76rem; font-weight:800; cursor:pointer; background:var(--card2); color:var(--ink); border:1px solid var(--line); padding:5px 12px; border-radius:8px}
+  .prompt .ph .copy:hover{background:var(--brand); color:#0d1022}
+  .prompt pre{
+    margin:0; padding:16px; white-space:pre-wrap; word-break:break-word; font-size:.86rem; line-height:1.65;
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; color:#d7ddff;
+  }
+  .prompt .var{color:var(--warn)}
+
+  /* PLANNER */
+  .planner{background:linear-gradient(180deg,var(--card2),var(--card)); border:1px solid var(--line); border-radius:var(--radius); padding:26px}
+  .form-row{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end}
+  .field{display:flex; flex-direction:column; gap:6px}
+  .field label{font-size:.8rem; color:var(--sub); font-weight:700}
+  .field input, .field select{
+    background:#0c0f1e; border:1px solid var(--line); color:var(--ink); border-radius:10px; padding:11px 12px; font-size:.92rem; min-width:140px;
+  }
+  #plan-out{margin-top:22px}
+  .dayblk{background:#0c0f1e; border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:10px}
+  .dayblk .dh{display:flex; align-items:center; gap:10px; margin-bottom:6px}
+  .dayblk .dd{font-weight:900; color:#fff}
+  .dayblk .dleft{margin-left:auto; font-size:.78rem; font-weight:800; padding:3px 9px; border-radius:7px; background:var(--card2); color:var(--brand2)}
+  .dayblk ul{margin:4px 0 0; padding-left:1.1em; color:var(--sub); font-size:.9rem}
+  .phase{font-size:.72rem; font-weight:800; padding:2px 8px; border-radius:6px}
+  .p1{background:rgba(124,140,255,.2); color:#b3bdff}
+  .p2{background:rgba(255,209,102,.18); color:#ffe09a}
+  .p3{background:rgba(255,122,156,.18); color:#ffb3c6}
+
+  /* TABLE */
+  table{width:100%; border-collapse:collapse; margin-top:16px; font-size:.9rem}
+  th,td{padding:11px 12px; text-align:left; border-bottom:1px solid var(--line)}
+  th{color:var(--brand2); font-size:.78rem; text-transform:uppercase; letter-spacing:.05em}
+  td{color:var(--sub)}
+  tr:hover td{background:rgba(255,255,255,.02)}
+
+  /* CALLOUT */
+  .callout{display:flex; gap:14px; background:rgba(86,224,200,.08); border:1px solid rgba(86,224,200,.25); border-radius:14px; padding:16px 18px; margin-top:18px}
+  .callout .ic{font-size:1.3rem}
+  .callout.warn{background:rgba(255,209,102,.08); border-color:rgba(255,209,102,.3)}
+  .callout p{margin:0; font-size:.92rem; color:var(--sub)}
+  .callout b{color:#fff}
+
+  /* MINDMAP */
+  .mindmap{background:#0c0f1e; border:1px solid var(--line); border-radius:14px; padding:18px; margin-top:16px; font-size:.9rem}
+  .mm-root{font-weight:900; color:var(--brand2)}
+  .mm-l1{margin:6px 0 4px 0; font-weight:800; color:#fff}
+  .mm-l2{margin-left:18px; color:var(--sub)}
+  .mm-l2 b{color:var(--warn)}
+
+  /* FAQ */
+  details{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:4px 18px; margin-bottom:10px}
+  summary{cursor:pointer; font-weight:700; padding:12px 0; list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"＋"; color:var(--brand2); font-weight:900; margin-right:10px}
+  details[open] summary::before{content:"－"}
+  details p{color:var(--sub); font-size:.92rem; margin:0 0 14px}
+
+  /* MOTIVATION */
+  .quote{font-size:1.4rem; font-weight:800; text-align:center; max-width:760px; margin:0 auto; line-height:1.5}
+  .quote span{background:linear-gradient(120deg,var(--brand2),var(--brand)); -webkit-background-clip:text; background-clip:text; color:transparent}
+
+  footer{border-top:1px solid var(--line); padding:36px 20px; text-align:center; color:var(--muted); font-size:.85rem}
+
+  .section-head{margin-bottom:30px}
+  .section-head h2{font-size:clamp(1.6rem,3.6vw,2.3rem); letter-spacing:-.02em}
+  .toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ok); color:#0d1022; font-weight:800; padding:12px 22px; border-radius:12px; opacity:0; transition:.25s; z-index:99; box-shadow:var(--shadow)}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  hr.div{border:none; border-top:1px solid var(--line); margin:28px 0}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav">
+  <div class="nav-in">
+    <div class="logo">올 A <b>프로젝트</b></div>
+    <nav class="nav-links">
+      <a href="#ai">AI 3대장</a>
+      <a href="#plan">학습 플랜</a>
+      <a href="#steps">개념학습 5단계</a>
+      <a href="#prompts">프롬프트 모음</a>
+      <a href="#textbook">교과서 병행</a>
+      <a href="#motivation">동기부여</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="badge">🎯 목표 · 시험 + 수행평가 + 출석 모두 90점 이상 (올 A)</span>
+  <h1>AI 3개로<br>중학교 모든 시험 올 A 받기</h1>
+  <p class="lead">평범한 중학생도 따라 할 수 있어요. <b style="color:#fff">노트북LM·제미나이·클로드</b> 세 개의 AI를
+  역할에 맞게 나눠 쓰고, 날짜별 플랜대로만 공부하면 됩니다. 외울 필요 없어요 — 그냥 복사·붙여넣기 하세요.</p>
+  <div class="cta">
+    <a class="btn primary" href="#plan">📅 내 시험 플랜 만들기</a>
+    <a class="btn ghost" href="#steps">📚 공부 5단계 보기</a>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><b>3개</b><span>역할 분담 AI</span></div>
+    <div class="stat"><b>5단계</b><span>개념 → 시험 완성 루트</span></div>
+    <div class="stat"><b>20+</b><span>복붙용 프롬프트</span></div>
+    <div class="stat"><b>0원</b><span>대부분 무료로 가능</span></div>
+  </div>
+</section>
+
+<!-- WHY / 5 ROLES -->
+<section>
+  <div class="section-head">
+    <p class="eyebrow">이 사이트가 해주는 5가지</p>
+    <h2>이 가이드는 5명의 선생님이에요</h2>
+    <p class="lead">한 사람이 다섯 가지 역할을 동시에 해줍니다. 어려운 건 AI가, 방향은 이 가이드가 잡아줘요.</p>
+  </div>
+  <div class="grid g3">
+    <div class="card"><h3>👩‍🏫 튜터</h3><p class="muted">어려운 개념을 쉬운 말과 예시로 다시 설명해줘요.</p></div>
+    <div class="card"><h3>🧭 멘토</h3><p class="muted">"지금 뭘 해야 하지?" 헷갈릴 때 다음 한 걸음을 알려줘요.</p></div>
+    <div class="card"><h3>📅 플래너</h3><p class="muted">시험일을 거꾸로 계산해 날짜별 과목·분량을 짜줘요.</p></div>
+    <div class="card"><h3>🔍 컨설턴트</h3><p class="muted">기출을 분석해 빈출·함정·실수 포인트를 콕 집어줘요.</p></div>
+    <div class="card"><h3>🔥 동기부여 강사</h3><p class="muted">하기 싫은 날에도 작게 시작하게 밀어줘요.</p></div>
+    <div class="card" style="background:linear-gradient(135deg,var(--brand),#9a7cff); color:#0d1022">
+      <h3 style="color:#0d1022">🏁 결과</h3><p style="color:#1a1d33; font-weight:700; margin:0">개념 이해 → 기출 대비 → 모의고사 → 실전. 빠짐없이 한 바퀴.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AI ROLES -->
+<section id="ai">
+  <div class="section-head">
+    <p class="eyebrow">AI 역할 분담</p>
+    <h2>3개의 AI, 각자 잘하는 게 달라요</h2>
+    <p class="lead">하나로 다 하려 하지 마세요. <b style="color:#fff">정리는 노트북LM, 빠른 질문은 제미나이, 깊은 설명은 클로드</b>.
+    이렇게 나눠 쓰는 게 핵심이에요.</p>
+  </div>
+  <div class="grid g3">
+
+    <div class="card ai-card">
+      <div class="top">
+        <div class="ai-ico ai-notebook">N</div>
+        <div><h3 style="margin:0">노트북LM</h3><span class="muted" style="font-size:.82rem">내 자료 전용 정리 비서</span></div>
+      </div>
+      <p class="muted" style="font-size:.9rem">교과서·학습지·문제집을 <b style="color:#fff">올려놓고</b> 그 안에서만 답하게 하는 AI. 거짓말(환각)이 가장 적어요.</p>
+      <ul>
+        <li>과목별 노트북 만들어 자료 모으기</li>
+        <li>마인드맵으로 전체 구조 보기</li>
+        <li>플래시카드·퀴즈 자동 생성</li>
+        <li>🎧 오디오 오버뷰(팟캐스트)</li>
+      </ul>
+      <div class="ver">추천: <b>NotebookLM</b> (Google 계정 무료) · 가장 잘 쓰는 곳: <b>자료 기반 정리·암기·듣기</b></div>
+    </div>
+
+    <div class="card ai-card">
+      <div class="top">
+        <div class="ai-ico ai-gemini">G</div>
+        <div><h3 style="margin:0">제미나이</h3><span class="muted" style="font-size:.82rem">빠르고 똑똑한 만능 질문기</span></div>
+      </div>
+      <p class="muted" style="font-size:.9rem">검색·이미지·빠른 답에 강해요. 사진 찍은 문제를 바로 풀이 받기 좋아요.</p>
+      <ul>
+        <li>사진(문제집·필기) 찍어 질문</li>
+        <li>모르는 단어·개념 빠른 검색</li>
+        <li>틀린 문제 비슷한 유형 더 만들기</li>
+        <li>표·요약 깔끔하게 정리</li>
+      </ul>
+      <div class="ver">추천: <b>Gemini 2.5 Flash</b>(빠름·무료) / 어려운 추론은 <b>2.5 Pro</b> · 가장 잘 쓰는 곳: <b>사진 질문·빠른 검색</b></div>
+    </div>
+
+    <div class="card ai-card">
+      <div class="top">
+        <div class="ai-ico ai-claude">C</div>
+        <div><h3 style="margin:0">클로드</h3><span class="muted" style="font-size:.82rem">깊고 친절한 설명 선생님</span></div>
+      </div>
+      <p class="muted" style="font-size:.9rem">긴 글 이해와 <b style="color:#fff">단계별로 차근차근</b> 설명을 가장 잘해요. 글쓰기 수행평가에 강력.</p>
+      <ul>
+        <li>어려운 개념을 비유로 풀어주기</li>
+        <li>서술형·논술 수행평가 첨삭</li>
+        <li>"왜?"를 끝까지 파고드는 설명</li>
+        <li>긴 학습지 통째로 요약·질문</li>
+      </ul>
+      <div class="ver">추천: 일반 <b>Sonnet</b> / 어려운 문제·글쓰기 <b>Opus</b> · 가장 잘 쓰는 곳: <b>깊은 이해·서술형</b></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="ic">💡</div>
+    <p><b>한 줄 요약:</b> &nbsp;자료 정리·암기·듣기는 <b style="color:var(--notebook)">노트북LM</b>, 사진 찍어 빠른 질문은 <b style="color:var(--gemini)">제미나이</b>, 깊은 설명·글쓰기는 <b style="color:var(--claude)">클로드</b>. 이 세 줄만 기억해도 충분해요.</p>
+  </div>
+</section>
+
+<!-- PLANNER -->
+<section id="plan">
+  <div class="section-head">
+    <p class="eyebrow">플래너</p>
+    <h2>📅 시험 D-day 학습 플랜 만들기</h2>
+    <p class="lead">시험일과 과목을 넣으면, 시험일을 거꾸로 계산해 <b style="color:#fff">날짜별로 뭘·얼마나</b> 공부할지 자동으로 짜줘요.
+    평범한 학생 기준으로 하루 분량을 무리하지 않게 나눴어요.</p>
+  </div>
+
+  <div class="planner">
+    <div class="form-row">
+      <div class="field">
+        <label>오늘 날짜</label>
+        <input type="date" id="today" />
+      </div>
+      <div class="field">
+        <label>시험 시작일</label>
+        <input type="date" id="examdate" />
+      </div>
+      <div class="field">
+        <label>하루 공부 가능 시간</label>
+        <select id="hours">
+          <option value="1">1시간</option>
+          <option value="2" selected>2시간</option>
+          <option value="3">3시간</option>
+          <option value="4">4시간 이상</option>
+        </select>
+      </div>
+      <div class="field" style="flex:1; min-width:220px">
+        <label>시험 과목 (쉼표로 구분)</label>
+        <input type="text" id="subjects" value="국어, 영어, 수학, 과학, 사회" />
+      </div>
+      <button class="btn primary" onclick="makePlan()">플랜 생성 ✨</button>
+    </div>
+    <div id="plan-out"></div>
+  </div>
+
+  <div class="callout warn">
+    <div class="ic">⏰</div>
+    <p><b>플랜의 3단계 원칙:</b> 전체 기간을 <b style="color:#b3bdff">① 개념 잡기(앞 50%)</b> → <b style="color:#ffe09a">② 기출·문제풀이(다음 30%)</b> → <b style="color:#ffb3c6">③ 모의고사·약점 복습(마지막 20%)</b> 으로 나눠요. 시험 전날은 새 내용 금지, 틀린 것만 다시!</p>
+  </div>
+</section>
+
+<!-- 5 STEPS -->
+<section id="steps">
+  <div class="section-head">
+    <p class="eyebrow">개념학습 5단계</p>
+    <h2>📚 이 순서대로만 하면 돼요</h2>
+    <p class="lead">한 과목을 공부할 때 1→5단계로 진행하세요. 각 단계마다 <b style="color:#fff">어떤 AI로, 어떤 프롬프트를</b> 쓰는지 그대로 따라 하면 됩니다.</p>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="num">1</div>
+    <div class="body">
+      <h3><span class="tag t-note">노트북LM</span>노트북 만들고 마인드맵으로 전체 구조 보기</h3>
+      <p class="muted">과목마다 노트북을 하나씩 만들어요. 교과서·학습지·문제집(사진·PDF·필기)을 <b style="color:#fff">소스(자료)로 업로드</b>하세요.
+      그다음 목차를 <b>대단원 → 소단원 → 소단원별 핵심내용</b> 순서로 마인드맵처럼 정리하게 시킵니다. 숲을 먼저 보고 나무로 들어가는 거예요.</p>
+
+      <div class="mindmap">
+        <div class="mm-root">🧠 예시 · 중2 과학 1단원</div>
+        <div class="mm-l1">└ 대단원: 물질의 구성</div>
+        <div class="mm-l2">├ 소단원 1) 원소 — <b>핵심:</b> 더 못 쪼개는 기본 물질, 원소기호</div>
+        <div class="mm-l2">├ 소단원 2) 원자와 분자 — <b>핵심:</b> 원자 구조, 분자식 읽기</div>
+        <div class="mm-l2">└ 소단원 3) 이온 — <b>핵심:</b> 양이온·음이온, 이온식, 앙금 반응</div>
+      </div>
+
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">노트북LM 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
+        <pre>업로드한 자료를 바탕으로 이 과목의 목차를 마인드맵 구조로 정리해줘.
+형식: 대단원 → 소단원 → 소단원별 핵심개념 3~5개.
+핵심개념은 한 줄로 짧게. 시험에 나올 만한 순서대로 배치해줘.</pre>
+      </div>
+      <div class="callout"><div class="ic">📌</div><p><b>왜 노트북LM?</b> 내가 올린 자료 안에서만 답해서, 우리 학교 시험 범위에 딱 맞아요. 인터넷 아무거나 가져오지 않아요.</p></div>
+    </div>
+  </div>
+
+  <hr class="div" />
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="num">2</div>
+    <div class="body">
+      <h3><span class="tag t-cla">클로드</span><span class="tag t-note">노트북LM</span>소단원별로 쉬운 말 + 예시로 이해하기</h3>
+      <p class="muted">마인드맵의 <b style="color:#fff">소단원 순서대로</b> 하나씩 공부해요. 어려운 개념은 같은 뜻이지만 쉬운 말로 바꾸거나,
+      일상 예시로 설명받습니다. "외우기" 전에 "이해"가 먼저예요.</p>
+
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--claude)"></span><span class="name">클로드 / 노트북LM 프롬프트 (이해용)</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>나는 중학교 <span class="var">2</span>학년이야. "<span class="var">이온</span>" 개념을 설명해줘.
+조건:
+1) 초등학생도 알 만한 쉬운 말로
+2) 일상 예시 1개로 비유
+3) 마지막에 "한 문장 핵심" 한 줄
+어려운 용어는 쓰면 바로 옆에 괄호로 뜻 풀이.</pre>
+      </div>
+
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--claude)"></span><span class="name">클로드 프롬프트 (이해 점검 — 내가 설명해보기)</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>지금부터 내가 "<span class="var">이온</span>"을 설명할게. 듣고 틀린 부분만 짚어줘.
+→ <span class="var">(여기에 내가 이해한 대로 직접 써보기)</span></pre>
+      </div>
+      <div class="callout warn"><div class="ic">🧪</div><p><b>가장 강력한 공부법:</b> AI 설명을 읽기만 하지 말고, <b style="color:#fff">내가 다시 설명</b>해보세요(셀프 티칭). 막히는 곳이 진짜 모르는 곳이에요.</p></div>
+    </div>
+  </div>
+
+  <hr class="div" />
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="num">3</div>
+    <div class="body">
+      <h3><span class="tag t-gem">제미나이</span><span class="tag t-note">노트북LM</span>기출 분석 — 빈출·헷갈리는·함정 개념 정리</h3>
+      <p class="muted">시중 문제집·기출 문제를 사진/PDF로 올리고, <b style="color:#fff">자주 나오는 것 · 헷갈리는 것 · 함정</b>을 뽑게 시켜요.
+      여기서 실수를 미리 잡으면 점수가 확 올라가요.</p>
+
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--gemini)"></span><span class="name">제미나이 / 노트북LM 프롬프트 (기출 분석)</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>이 문제집/기출을 분석해서 표로 정리해줘. 열 3개:
+① 자주 나오는 개념(빈출)
+② 학생들이 자주 헷갈리는 개념 + 왜 헷갈리는지
+③ 함정 포인트(실수 유발) + 안 틀리는 팁
+중요한 순서대로, 각 5개 이내로 짧게.</pre>
+      </div>
+
+      <table>
+        <tr><th>빈출 개념</th><th>헷갈리는 포인트</th><th>함정 / 실수 방지</th></tr>
+        <tr><td>이온식 쓰기</td><td>양이온/음이온 부호 방향</td><td>금속 = 양이온! 헷갈리면 "금양" 암기</td></tr>
+        <tr><td>앙금 생성 반응</td><td>색깔·물질명 매칭</td><td>"염화은 = 흰색" 같은 1:1 카드로</td></tr>
+        <tr><td>원자 vs 분자</td><td>분자식 숫자 위치</td><td>아래첨자=개수, 앞숫자=묶음 수</td></tr>
+      </table>
+      <p class="muted" style="font-size:.85rem; margin-top:10px">↑ AI가 뽑아준 표를 이렇게 받아서 노트북LM 플래시카드로 바로 넘기면 끝.</p>
+    </div>
+  </div>
+
+  <hr class="div" />
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="num">4</div>
+    <div class="body">
+      <h3><span class="tag t-note">노트북LM</span>플래시카드로 암기 + 퀴즈로 실전 모의고사</h3>
+      <p class="muted">노트북LM의 <b style="color:#fff">플래시카드</b>로 내가 약한 개념만 골라 외우고, <b style="color:#fff">퀴즈</b>로
+      실제 시험 난이도의 모의고사를 봅니다. 정형화된 문제만 말고 <b>다양한 유형</b>으로 만들어 달라고 하는 게 포인트예요.</p>
+
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">노트북LM 프롬프트 (모의고사 — 다양한 유형)</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>업로드한 자료로 실제 학교 시험 난이도의 모의고사 <span class="var">15</span>문제를 만들어줘.
+유형을 섞어줘: 객관식, 참/거짓, 빈칸 채우기, 짧은 서술형, 자료해석 각 일부.
+난이도: 쉬움 4 / 보통 7 / 어려움 4.
+문제만 먼저 보여주고, 정답·해설은 내가 "정답" 이라고 하면 그때 줘.</pre>
+      </div>
+
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">노트북LM 프롬프트 (약점만 집중 플래시카드)</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>내가 자주 틀리는 개념: <span class="var">이온식, 앙금 색깔</span>.
+이 개념만으로 플래시카드 20장 만들어줘. 앞면=질문, 뒷면=짧은 정답+이유 한 줄.</pre>
+      </div>
+      <div class="callout"><div class="ic">🎯</div><p><b>틀린 문제 재활용:</b> 틀린 문제는 제미나이에 사진 찍어 올리고 "이거랑 비슷한 유형 3개 더 만들어줘" 하면 약점만 집중 훈련돼요.</p></div>
+    </div>
+  </div>
+
+  <hr class="div" />
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="num">5</div>
+    <div class="body">
+      <h3><span class="tag t-note">노트북LM</span>🎧 오디오 오버뷰 팟캐스트 — 흘려보내는 시간 활용</h3>
+      <p class="muted">등굣길·샤워·잘 때 등 <b style="color:#fff">손으로 공부 못 하는 시간</b>에 귀로 복습해요.
+      노트북LM의 <b>오디오 오버뷰</b>로 두 명이 대화하는 팟캐스트를 만듭니다.</p>
+
+      <div class="callout warn"><div class="ic">⚠️</div><p><b>중요 — 깊게 만들기:</b> 범위를 넓게 잡으면 "넓고 얕은" 개괄 방송이 돼서 공부가 안 돼요.
+      <b style="color:#fff">한 번에 소단원 1개</b>만, "깊이 있게" 만들어 달라고 하세요. 짧고 깊은 게 이겨요.</p></div>
+
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">오디오 오버뷰 — 맞춤 설정(Customize) 입력</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>주제: "<span class="var">이온</span>" 소단원 1개만 깊게 다뤄줘.
+듣는 사람: 중학교 <span class="var">2</span>학년. 분량: 5~7분.
+넓게 훑지 말고, 이 소단원의 핵심 개념 3개를 예시와 함께 깊이 설명.
+시험에 잘 나오는 포인트와 흔한 실수를 꼭 짚어줘. 쉬운 말로.</pre>
+      </div>
+      <p class="muted" style="font-size:.88rem">📥 만든 오디오는 다운로드해서 음악 앱 재생목록처럼 모아두면, 이동 중에 과목별로 골라 들을 수 있어요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROMPT LIBRARY -->
+<section id="prompts">
+  <div class="section-head">
+    <p class="eyebrow">복붙용 프롬프트 모음</p>
+    <h2>🗂️ 상황별 프롬프트 (그대로 복사하세요)</h2>
+    <p class="lead">외우지 마세요. 필요할 때 <b style="color:#fff">복사 버튼</b>을 누르고, <span class="var" style="color:var(--warn)">노란 글씨</span>만 내 과목·학년으로 바꾸면 됩니다.
+    아래는 토큰(=AI 사용량)을 적게 쓰면서 좋은 답을 받게 다듬은 프롬프트예요.</p>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <span class="pill" style="background:rgba(217,119,87,.2); color:#ffb597">클로드 · 서술형 수행평가</span>
+      <h3 style="margin-top:10px">글쓰기 첨삭받기</h3>
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--claude)"></span><span class="name">첨삭 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>중<span class="var">2</span> 수행평가 서술형 답안이야. 채점 기준대로 첨삭해줘.
+주제: <span class="var">(주제)</span>
+내 답안: <span class="var">(붙여넣기)</span>
+① 잘한 점 ② 감점될 부분 ③ 고친 예시 한 문단. 짧게.</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="pill" style="background:rgba(91,140,255,.2); color:#a8c0ff">제미나이 · 사진 질문</span>
+      <h3 style="margin-top:10px">모르는 문제 사진으로 풀이</h3>
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--gemini)"></span><span class="name">사진 풀이 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>(문제 사진 첨부) 이 문제 풀이를 단계별로 알려줘.
+답만 말고, 왜 그렇게 푸는지 한 줄씩. 마지막에 같은 실수 안 하는 팁 1개.</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="pill" style="background:rgba(246,169,59,.18); color:#ffce86">노트북LM · 요약</span>
+      <h3 style="margin-top:10px">긴 학습지 핵심만 뽑기</h3>
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">요약 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>이 학습지에서 시험에 나올 핵심만 불릿 10개로.
+각 줄은 15자 이내. 외워야 할 숫자·용어는 [ ] 안에 넣어 강조.</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="pill" style="background:rgba(124,140,255,.2); color:#b3bdff">공통 · 막힐 때</span>
+      <h3 style="margin-top:10px">"이해 안 돼요" 다시 설명</h3>
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--brand)"></span><span class="name">재설명 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>방금 설명 아직 어려워. 더 쉽게, 더 짧게.
+초등 5학년한테 말하듯이. 비유 1개만 써서 다시.</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="pill" style="background:rgba(86,224,200,.16); color:#8ff0dd">제미나이 · 약점 훈련</span>
+      <h3 style="margin-top:10px">비슷한 문제 더 만들기</h3>
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--gemini)"></span><span class="name">유사 문제 생성</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>이 문제랑 같은 개념·같은 난이도의 새 문제 <span class="var">3</span>개 만들어줘.
+숫자랑 상황만 바꿔서. 정답은 맨 아래 따로.</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="pill" style="background:rgba(255,209,102,.18); color:#ffe09a">공통 · 시험 전날</span>
+      <h3 style="margin-top:10px">최종 점검 체크리스트</h3>
+      <div class="prompt">
+        <div class="ph"><span class="dot" style="background:var(--warn)"></span><span class="name">전날 점검 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>내일 <span class="var">과학</span> 시험. 이 자료 기준으로 "절대 틀리면 안 되는" 핵심 10개와
+"자주 실수하는 함정 5개"만 뽑아줘. 새 내용 말고 복습용으로 짧게.</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="ic">🪙</div>
+    <p><b>토큰(사용량) 아끼는 3가지 습관:</b> &nbsp;① "짧게/표로/불릿으로" 라고 분량을 지정한다 &nbsp;② 한 번에 한 가지만 묻는다 &nbsp;③ 자료는 노트북LM에 올려두고 매번 다시 안 붙여넣는다.</p>
+  </div>
+
+  <div class="callout warn" style="margin-top:14px">
+    <div class="ic">⭐</div>
+    <p><b>좋은 프롬프트 공식 = 누가 + 무엇을 + 어떻게:</b> &nbsp;"나는 <b>중2</b>(누가) / <b>이온</b>을(무엇을) / <b>쉬운 말과 예시로, 핵심 한 줄 포함해</b>(어떻게) 설명해줘." &nbsp;이 3개만 넣으면 답이 확 좋아져요.</p>
+  </div>
+</section>
+
+<!-- TEXTBOOK -->
+<section id="textbook">
+  <div class="section-head">
+    <p class="eyebrow">AI에만 의지하지 않기</p>
+    <h2>📖 교과서·학습지 병행 학습법</h2>
+    <p class="lead">AI는 빠르지만, 진짜 시험은 <b style="color:#fff">우리 학교 교과서·학습지</b>에서 나와요. AI로 이해한 다음
+    반드시 실제 책으로 세부 내용을 확인하는 "왕복 학습"을 하세요.</p>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>🔁 왕복 학습 루틴</h3>
+      <ul style="color:var(--sub); padding-left:1.1em">
+        <li><b style="color:#fff">교과서 먼저</b> 한 번 읽기 (밑줄·물음표 표시)</li>
+        <li>모르는 부분만 AI에게 질문</li>
+        <li>AI 설명 들은 뒤 <b style="color:#fff">교과서로 돌아와</b> 그 문장 다시 읽기</li>
+        <li>선생님이 강조한 부분·필기는 AI보다 우선!</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>✍️ 교과서에서 직접 챙길 것</h3>
+      <ul style="color:var(--sub); padding-left:1.1em">
+        <li>그림·표·그래프 (시험 단골)</li>
+        <li>각주·작은 글씨·예제</li>
+        <li>단원 끝 <b style="color:#fff">'확인 문제'</b> 손으로 풀기</li>
+        <li>선생님 말 "이거 시험 나온다" → 형광펜 + 카드화</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout"><div class="ic">🧠</div><p><b>황금 규칙:</b> 이해는 AI로, <b style="color:#fff">암기와 확인은 손으로</b>. 눈으로만 본 건 시험장에서 사라져요. 한 번이라도 직접 써본 건 남아요.</p></div>
+</section>
+
+<!-- MOTIVATION -->
+<section id="motivation" style="text-align:center">
+  <p class="eyebrow">동기부여</p>
+  <p class="quote">머리가 좋아서 A를 받는 게 아니라,<br><span>순서대로 끝까지 한 사람</span>이 A를 받아요.</p>
+  <div class="grid g3" style="margin-top:34px; text-align:left">
+    <div class="card"><h3>😮‍💨 하기 싫은 날</h3><p class="muted">"딱 10분, 플래시카드 1세트만." 시작이 제일 어려워요. 일단 앉으면 됩니다.</p></div>
+    <div class="card"><h3>📉 점수가 안 오를 때</h3><p class="muted">틀린 문제 = 점수 올릴 보물. 맞은 문제 말고 <b style="color:#fff">틀린 것만</b> 다시 보세요.</p></div>
+    <div class="card"><h3>🏆 매일 한 칸</h3><p class="muted">플랜의 오늘 칸 하나만 지우면 성공. 작은 성공이 쌓여 올 A가 돼요.</p></div>
+  </div>
+  <div class="prompt" style="max-width:680px; margin:26px auto 0; text-align:left">
+    <div class="ph"><span class="dot" style="background:var(--brand2)"></span><span class="name">의욕 안 날 때 쓰는 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
+<pre>나 오늘 공부하기 너무 싫어. 그래도 10분만 할 수 있는
+가장 쉬운 공부 1개만 정해줘. 잔소리 말고 딱 하나만.</pre>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="section-head">
+    <p class="eyebrow">자주 묻는 질문</p>
+    <h2>❓ FAQ</h2>
+  </div>
+  <details><summary>AI가 알려준 게 틀릴 수도 있나요?</summary><p>네, 있을 수 있어요(이걸 '환각'이라고 해요). 그래서 <b>노트북LM</b>처럼 내 자료 안에서만 답하는 AI를 정리·암기에 쓰고, 최종 확인은 항상 교과서로 합니다. 헷갈리면 "자료의 어디에 나와?"라고 물어보세요.</p></details>
+  <details><summary>꼭 3개 다 써야 하나요?</summary><p>아니요. 핵심은 <b>노트북LM</b>(정리·암기·듣기) 하나만 잘 써도 큰 효과가 있어요. 사진 질문이 많으면 제미나이, 깊은 설명·글쓰기가 필요하면 클로드를 더하면 됩니다.</p></details>
+  <details><summary>무료로 가능한가요?</summary><p>대부분 무료 범위로 충분해요. 노트북LM은 구글 계정만 있으면 무료, 제미나이·클로드도 무료 등급이 있어요. 어려운 문제나 긴 글쓰기에서만 가끔 상위 모델이 도움이 됩니다.</p></details>
+  <details><summary>시험 범위가 바뀌면요?</summary><p>선생님이 정해준 범위의 자료만 노트북LM에 올리세요. 범위 밖 자료는 빼면, AI가 딱 시험 범위로만 정리·출제해줘요.</p></details>
+  <details><summary>수행평가랑 출석도 올 A에 들어가나요?</summary><p>네. 올 A는 시험+수행평가+출석을 모두 90점 이상으로 보는 절대평가예요. 수행평가는 <b>클로드 첨삭</b>으로, 출석은 가장 쉬운 점수니 절대 놓치지 마세요(지각·결석 관리).</p></details>
+</section>
+
+<footer>
+  <p>올 A 프로젝트 · 노트북LM × 제미나이 × 클로드 학습 가이드</p>
+  <p class="muted">AI는 도구일 뿐이에요. 오늘 플랜의 한 칸을 지우는 건 당신입니다. 🏁</p>
+</footer>
+
+<div class="toast" id="toast">복사됐어요! 붙여넣기(Ctrl+V) 하세요 ✨</div>
+
+<script>
+  // 오늘 날짜 기본값
+  (function(){
+    const t=new Date(); const iso=t.toISOString().slice(0,10);
+    document.getElementById('today').value=iso;
+    const ex=new Date(t.getTime()+14*86400000);
+    document.getElementById('examdate').value=ex.toISOString().slice(0,10);
+  })();
+
+  function copyP(btn){
+    const pre=btn.closest('.prompt').querySelector('pre');
+    const text=pre.innerText;
+    navigator.clipboard.writeText(text).then(()=>showToast()).catch(()=>{
+      const r=document.createRange(); r.selectNode(pre);
+      window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+      try{document.execCommand('copy'); showToast();}catch(e){}
+      window.getSelection().removeAllRanges();
+    });
+  }
+  let toastTimer;
+  function showToast(msg){
+    const el=document.getElementById('toast');
+    if(msg) el.textContent=msg;
+    el.classList.add('show'); clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>el.classList.remove('show'),1800);
+  }
+
+  function makePlan(){
+    const today=new Date(document.getElementById('today').value);
+    const exam=new Date(document.getElementById('examdate').value);
+    const hours=parseInt(document.getElementById('hours').value,10);
+    const subs=document.getElementById('subjects').value.split(',').map(s=>s.trim()).filter(Boolean);
+    const out=document.getElementById('plan-out');
+
+    if(isNaN(today)||isNaN(exam)){ out.innerHTML='<p class="muted">날짜를 입력해 주세요.</p>'; return; }
+    const days=Math.round((exam-today)/86400000);
+    if(days<=0){ out.innerHTML='<p style="color:var(--danger)">시험일이 오늘보다 뒤여야 해요!</p>'; return; }
+    if(subs.length===0){ out.innerHTML='<p class="muted">과목을 1개 이상 입력해 주세요.</p>'; return; }
+
+    // 3단계 경계: 개념50% / 기출30% / 모의고사20%
+    const c1=Math.max(1,Math.round(days*0.5));
+    const c2=Math.max(c1+1,Math.round(days*0.8));
+
+    const phaseInfo=(i)=>{
+      if(i<c1) return {cls:'p1',label:'① 개념 잡기',task:(s)=>['<span class="tag t-note">노트북LM</span> '+s+' 마인드맵 + 소단원 1~2개 개념 이해','<span class="tag t-cla">클로드</span> 어려운 개념 쉬운 설명 듣고 내가 다시 설명해보기']};
+      if(i<c2) return {cls:'p2',label:'② 기출·문제풀이',task:(s)=>['<span class="tag t-gem">제미나이</span> '+s+' 기출 분석(빈출·함정 표) + 문제집 풀기','<span class="tag t-note">노트북LM</span> 틀린 개념만 플래시카드로 암기']};
+      return {cls:'p3',label:'③ 모의고사·약점복습',task:(s)=>['<span class="tag t-note">노트북LM</span> '+s+' 퀴즈로 실전 모의고사','틀린 문제만 다시 + 🎧 팟캐스트로 이동중 복습']};
+    };
+
+    let html='<p style="margin:0 0 6px"><b style="color:#fff">시험까지 '+days+'일</b> · 하루 '+hours+'시간 · '+subs.length+'과목</p>';
+    html+='<p class="muted" style="font-size:.84rem; margin:0 0 14px">앞 '+c1+'일은 개념, 다음 '+(c2-c1)+'일은 기출, 마지막 '+(days-c2)+'일은 모의고사예요.</p>';
+
+    const dayLabels=['일','월','화','수','목','금','토'];
+    // 과목을 하루 분량(시간)에 맞춰 1~2개씩 순환 배치
+    const perDay=hours>=3?2:1;
+    let si=0;
+
+    for(let i=0;i<days;i++){
+      const d=new Date(today.getTime()+i*86400000);
+      const ph=phaseInfo(i);
+      const todays=[];
+      for(let k=0;k<perDay;k++){ todays.push(subs[si%subs.length]); si++; }
+      const dStr=(d.getMonth()+1)+'/'+d.getDate()+'('+dayLabels[d.getDay()]+')';
+      const dleft='D-'+(days-i);
+
+      let lis='';
+      todays.forEach(s=>{ ph.task(s).forEach(t=> lis+='<li>'+t+'</li>'); });
+
+      // 마지막 날 = 최종점검
+      if(i===days-1){
+        lis='<li><span class="tag t-note">노트북LM</span> 전과목 "틀리면 안 되는 핵심 10 + 함정 5" 최종 점검</li><li>새 내용 금지! 일찍 자기 😴</li>';
+      }
+
+      html+='<div class="dayblk"><div class="dh"><span class="dd">'+dStr+'</span>'
+          +'<span class="phase '+ph.cls+'">'+ph.label+'</span>'
+          +'<span class="dleft">'+dleft+'</span></div><ul>'+lis+'</ul></div>';
+    }
+    out.innerHTML=html;
+    out.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+</script>
+</body>
+</html>
