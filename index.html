@@ -41,13 +41,19 @@
     color:var(--sub); font-weight:600; font-size:.86rem; padding:7px 11px; border-radius:10px;
   }
   .nav-links a:hover{color:#fff; background:var(--card)}
-  @media(max-width:760px){ .nav-links{display:none} }
+  @media(max-width:760px){
+    .nav-in{gap:10px}
+    .logo{flex:0 0 auto}
+    .nav-links{margin-left:auto; flex-wrap:nowrap; overflow-x:auto; gap:4px; padding-bottom:2px; -webkit-overflow-scrolling:touch; scrollbar-width:none}
+    .nav-links::-webkit-scrollbar{display:none}
+    .nav-links a{white-space:nowrap; font-size:.8rem; padding:6px 9px}
+  }
 
   /* HERO */
   .hero{padding-top:54px; text-align:center}
   .badge{
-    display:inline-flex; gap:8px; align-items:center; background:var(--card); border:1px solid var(--line);
-    padding:7px 14px; border-radius:999px; font-size:.84rem; color:var(--sub); font-weight:600;
+    display:inline-block; text-align:center; line-height:1.55; background:var(--card); border:1px solid var(--line);
+    padding:9px 18px; border-radius:16px; font-size:.84rem; color:var(--sub); font-weight:600;
   }
   .hero h1{
     font-size:clamp(2rem,5.4vw,3.5rem); letter-spacing:-.03em; margin:.5em auto .3em; max-width:880px;
@@ -177,6 +183,32 @@
   .toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ok); color:#0d1022; font-weight:800; padding:12px 22px; border-radius:12px; opacity:0; transition:.25s; z-index:99; box-shadow:var(--shadow)}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
   hr.div{border:none; border-top:1px solid var(--line); margin:28px 0}
+
+  /* MOBILE */
+  @media(max-width:600px){
+    section{padding:48px 16px}
+    .hero{padding-top:34px}
+    .lead{font-size:1rem}
+    .stat-row{gap:16px 26px; margin-top:28px}
+    .stat b{font-size:1.4rem}
+    .badge{font-size:.74rem; padding:6px 12px}
+    .card{padding:18px}
+    .planner{padding:18px}
+    .form-row{flex-direction:column; align-items:stretch; gap:12px}
+    .field{width:100%}
+    .field input,.field select{min-width:0; width:100%}
+    .form-row .btn{width:100%; justify-content:center}
+    .prompt pre{font-size:.8rem; padding:13px; line-height:1.6}
+    .prompt .ph{padding:9px 12px}
+    .step{gap:12px}
+    .step .num{flex:0 0 38px; height:38px; font-size:1rem; border-radius:11px}
+    .step .body h3{font-size:1.05rem}
+    table{font-size:.8rem}
+    th,td{padding:8px 9px}
+    .quote{font-size:1.15rem}
+    .callout{padding:14px 15px}
+    .section-head{margin-bottom:22px}
+  }
 </style>
 </head>
 <body>
@@ -199,10 +231,10 @@
 
 <!-- HERO -->
 <section class="hero">
-  <span class="badge">🎯 목표 · 시험 + 수행평가 + 출석 모두 90점 이상 (올 A)</span>
+  <span class="badge">🎯 목표 : 올 A<br>[시험 + 수행평가 + 출석] 3개의 점수 합쳐서 90점 이상</span>
   <h1>AI 3개로<br>중학교 모든 시험 올 A 받기</h1>
-  <p class="lead">평범한 중학생도 따라 할 수 있어요. <b style="color:#fff">노트북LM·제미나이·클로드</b> 세 개의 AI를
-  역할에 맞게 나눠 쓰고, 날짜별 플랜대로만 공부하면 됩니다. 외울 필요 없어요 — 그냥 복사·붙여넣기 하세요.</p>
+  <p class="lead">평범한 중학생도 따라 할 수 있어요.<br><b style="color:#fff">노트북LM·제미나이·클로드</b> 세 개의 AI를
+  역할에 맞게 나눠 쓰고,<br>날짜별 플랜대로만 공부하면 됩니다.<br>외울 필요 없어요 — 그냥 복사·붙여넣기 하세요.</p>
   <div class="cta">
     <a class="btn primary" href="#plan">📅 내 시험 플랜 만들기</a>
     <a class="btn ghost" href="#steps">📚 공부 5단계 보기</a>
@@ -223,7 +255,7 @@
     <p class="lead">한 사람이 다섯 가지 역할을 동시에 해줍니다. 어려운 건 AI가, 방향은 이 가이드가 잡아줘요.</p>
   </div>
   <div class="grid g3">
-    <div class="card"><h3>👩‍🏫 튜터</h3><p class="muted">어려운 개념을 쉬운 말과 예시로 다시 설명해줘요.</p></div>
+    <div class="card"><h3>👩‍🏫 과외 선생님</h3><p class="muted">어려운 개념을 쉬운 말과 예시로 다시 설명해줘요.</p></div>
     <div class="card"><h3>🧭 멘토</h3><p class="muted">"지금 뭘 해야 하지?" 헷갈릴 때 다음 한 걸음을 알려줘요.</p></div>
     <div class="card"><h3>📅 플래너</h3><p class="muted">시험일을 거꾸로 계산해 날짜별 과목·분량을 짜줘요.</p></div>
     <div class="card"><h3>🔍 컨설턴트</h3><p class="muted">기출을 분석해 빈출·함정·실수 포인트를 콕 집어줘요.</p></div>
@@ -249,14 +281,14 @@
         <div class="ai-ico ai-notebook">N</div>
         <div><h3 style="margin:0">노트북LM</h3><span class="muted" style="font-size:.82rem">내 자료 전용 정리 비서</span></div>
       </div>
-      <p class="muted" style="font-size:.9rem">교과서·학습지·문제집을 <b style="color:#fff">올려놓고</b> 그 안에서만 답하게 하는 AI. 거짓말(환각)이 가장 적어요.</p>
+      <p class="muted" style="font-size:.9rem">교과서·학습지·문제집을 <b style="color:#fff">올려놓고</b><br>그 안에서만 답하게 하는 AI. 이상한 소리를 가장 적게 해요.</p>
       <ul>
         <li>과목별 노트북 만들어 자료 모으기</li>
         <li>마인드맵으로 전체 구조 보기</li>
         <li>플래시카드·퀴즈 자동 생성</li>
         <li>🎧 오디오 오버뷰(팟캐스트)</li>
       </ul>
-      <div class="ver">추천: <b>NotebookLM</b> (Google 계정 무료) · 가장 잘 쓰는 곳: <b>자료 기반 정리·암기·듣기</b></div>
+      <div class="ver">추천: <b>NotebookLM</b> (Google 계정 무료)<br>가장 잘 쓰는 곳: <b>자료 기반 정리·암기·듣기</b></div>
     </div>
 
     <div class="card ai-card">
@@ -264,14 +296,14 @@
         <div class="ai-ico ai-gemini">G</div>
         <div><h3 style="margin:0">제미나이</h3><span class="muted" style="font-size:.82rem">빠르고 똑똑한 만능 질문기</span></div>
       </div>
-      <p class="muted" style="font-size:.9rem">검색·이미지·빠른 답에 강해요. 사진 찍은 문제를 바로 풀이 받기 좋아요.</p>
+      <p class="muted" style="font-size:.9rem">검색·이미지·빠른 답에 강해요.<br>사진 찍은 문제를 바로 풀이 받기 좋아요.</p>
       <ul>
         <li>사진(문제집·필기) 찍어 질문</li>
         <li>모르는 단어·개념 빠른 검색</li>
         <li>틀린 문제 비슷한 유형 더 만들기</li>
         <li>표·요약 깔끔하게 정리</li>
       </ul>
-      <div class="ver">추천: <b>Gemini 2.5 Flash</b>(빠름·무료) / 어려운 추론은 <b>2.5 Pro</b> · 가장 잘 쓰는 곳: <b>사진 질문·빠른 검색</b></div>
+      <div class="ver">추천: <b>Gemini 3.5 Flash</b> (빠름·무료)<br>어려운 추론: <b>Gemini 3.1 Pro</b><br>가장 잘 쓰는 곳: <b>사진 질문·빠른 검색</b></div>
     </div>
 
     <div class="card ai-card">
@@ -279,20 +311,20 @@
         <div class="ai-ico ai-claude">C</div>
         <div><h3 style="margin:0">클로드</h3><span class="muted" style="font-size:.82rem">깊고 친절한 설명 선생님</span></div>
       </div>
-      <p class="muted" style="font-size:.9rem">긴 글 이해와 <b style="color:#fff">단계별로 차근차근</b> 설명을 가장 잘해요. 글쓰기 수행평가에 강력.</p>
+      <p class="muted" style="font-size:.9rem">긴 글 이해와 <b style="color:#fff">단계별로 차근차근</b><br>설명을 가장 잘해요.<br>글쓰기 수행평가에 강력.</p>
       <ul>
         <li>어려운 개념을 비유로 풀어주기</li>
         <li>서술형·논술 수행평가 첨삭</li>
         <li>"왜?"를 끝까지 파고드는 설명</li>
         <li>긴 학습지 통째로 요약·질문</li>
       </ul>
-      <div class="ver">추천: 일반 <b>Sonnet</b> / 어려운 문제·글쓰기 <b>Opus</b> · 가장 잘 쓰는 곳: <b>깊은 이해·서술형</b></div>
+      <div class="ver">추천: 일반 <b>Sonnet</b> (평소 공부 전반에)<br>어려운 문제·글쓰기: <b>Opus</b> (길고 복잡한 과제에만 추천)<br>가장 잘 쓰는 곳: <b>깊은 이해·서술형</b></div>
     </div>
   </div>
 
   <div class="callout">
     <div class="ic">💡</div>
-    <p><b>한 줄 요약:</b> &nbsp;자료 정리·암기·듣기는 <b style="color:var(--notebook)">노트북LM</b>, 사진 찍어 빠른 질문은 <b style="color:var(--gemini)">제미나이</b>, 깊은 설명·글쓰기는 <b style="color:var(--claude)">클로드</b>. 이 세 줄만 기억해도 충분해요.</p>
+    <p><b>한 줄 요약:</b><br>자료 정리·암기·듣기는 <b style="color:var(--notebook)">노트북LM</b>,<br>사진 찍어 빠른 질문은 <b style="color:var(--gemini)">제미나이</b>,<br>깊은 설명·글쓰기는 <b style="color:var(--claude)">클로드</b>.<br>이 세 줄만 기억해도 충분해요.</p>
   </div>
 </section>
 
@@ -335,7 +367,7 @@
 
   <div class="callout warn">
     <div class="ic">⏰</div>
-    <p><b>플랜의 3단계 원칙:</b> 전체 기간을 <b style="color:#b3bdff">① 개념 잡기(앞 50%)</b> → <b style="color:#ffe09a">② 기출·문제풀이(다음 30%)</b> → <b style="color:#ffb3c6">③ 모의고사·약점 복습(마지막 20%)</b> 으로 나눠요. 시험 전날은 새 내용 금지, 틀린 것만 다시!</p>
+    <p><b>플랜의 3단계 원칙:</b> 전체 기간을 <b style="color:#b3bdff">① 개념 잡기(앞 50%)</b> → <b style="color:#ffe09a">② 기출·문제풀이(다음 30%)</b> → <b style="color:#ffb3c6">③ 모의고사·약점 복습(마지막 20%)</b> 으로 나눠요. 시험 전날 새로운 내용 학습은 금지, 틀린 것만 다시 복습!</p>
   </div>
 </section>
 
@@ -344,7 +376,7 @@
   <div class="section-head">
     <p class="eyebrow">개념학습 5단계</p>
     <h2>📚 이 순서대로만 하면 돼요</h2>
-    <p class="lead">한 과목을 공부할 때 1→5단계로 진행하세요. 각 단계마다 <b style="color:#fff">어떤 AI로, 어떤 프롬프트를</b> 쓰는지 그대로 따라 하면 됩니다.</p>
+    <p class="lead">한 과목을 공부할 때 1→5단계로 진행하세요.<br>각 단계마다 <b style="color:#fff">어떤 AI로, 어떤 프롬프트를</b> 쓰는지 그대로 따라 하면 됩니다.</p>
   </div>
 
   <!-- STEP 1 -->
@@ -352,8 +384,7 @@
     <div class="num">1</div>
     <div class="body">
       <h3><span class="tag t-note">노트북LM</span>노트북 만들고 마인드맵으로 전체 구조 보기</h3>
-      <p class="muted">과목마다 노트북을 하나씩 만들어요. 교과서·학습지·문제집(사진·PDF·필기)을 <b style="color:#fff">소스(자료)로 업로드</b>하세요.
-      그다음 목차를 <b>대단원 → 소단원 → 소단원별 핵심내용</b> 순서로 마인드맵처럼 정리하게 시킵니다. 숲을 먼저 보고 나무로 들어가는 거예요.</p>
+      <p class="muted">과목마다 노트북을 하나씩 만들어요. 교과서·학습지·문제집(사진·PDF·필기)을 <b style="color:#fff">소스(자료)로 업로드</b>하세요.<br>그다음 목차를 <b>대단원 → 소단원 → 소단원별 핵심내용</b> 순서로 마인드맵처럼 정리하게 시킵니다.<br>숲을 먼저 보고 나무로 들어가는 거예요.</p>
 
       <div class="mindmap">
         <div class="mm-root">🧠 예시 · 중2 과학 1단원</div>
@@ -364,12 +395,83 @@
       </div>
 
       <div class="prompt">
-        <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">노트북LM 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
-        <pre>업로드한 자료를 바탕으로 이 과목의 목차를 마인드맵 구조로 정리해줘.
-형식: 대단원 → 소단원 → 소단원별 핵심개념 3~5개.
-핵심개념은 한 줄로 짧게. 시험에 나올 만한 순서대로 배치해줘.</pre>
+        <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">노트북LM · 마인드맵 프롬프트 (책 목차 기반 구조화)</span><button class="copy" onclick="copyP(this)">복사</button></div>
+        <pre>소스 추가된 자료를 바탕으로 이 과목 전체 내용의 목차를 아래 계층 구조로 정리해줘.
+
+[구조 형식]
+N대단원 [대단원 제목]
+└─ N중단원 [중단원 제목]
+   └─ N소단원 [소단원 제목]
+      └─ 핵심 내용
+
+
+[조건]
+- 목차의 단원 아래에 숫자로 표기된 모든 항목은
+  요약하거나 생략하지 말고 반드시 전부 포함할 것
+- 절과 절 사이에는 빈 줄 1줄을 넣어 계층을 시각적으로 구분할 것
+- 목차 순서를 그대로 따를 것
+- 들여쓰기로 계층 구조를 명확히 표현할 것
+
+[핵심 내용 작성 기준]
+- 시험 출제 가능성이 높은 개념은 교재 내 실전 예상 문제, 문제집의 출제된 빈도가 높은 것들을 우선으로 판단할 것
+- 비교적 평이한 개념은 키워드와 정의 위주의 암기 포인트로 간결하게 작성
+- 어렵거나 전문적인 개념은 암기 포인트와 함께 이해를 돕는 부연 설명도 함께 작성할 것
+  (예: 개념 간 관계, 적용 맥락, 혼동하기 쉬운 포인트 등)
+
+1단원부터 순서대로 끝까지 작성해줘.</pre>
       </div>
       <div class="callout"><div class="ic">📌</div><p><b>왜 노트북LM?</b> 내가 올린 자료 안에서만 답해서, 우리 학교 시험 범위에 딱 맞아요. 인터넷 아무거나 가져오지 않아요.</p></div>
+
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin-bottom:4px; font-size:1.1rem">📱 먼저 준비 — 교과서·학습지·문제집을 'PDF'로 만들기</h3>
+        <p class="muted" style="font-size:.92rem; margin-top:0">노트북LM에 올리려면 종이 자료를 사진이 아니라 <b style="color:#fff">PDF 파일</b>로 만드는 게 좋아요.
+        스마트폰 무료 앱이면 1분이면 끝나요. (가장 현실적인 방법이에요!)</p>
+
+        <p style="font-weight:800; margin:14px 0 4px; color:#fff">📋 따라 하기 (순서대로)</p>
+        <ol style="color:var(--sub); padding-left:1.2em; font-size:.92rem; margin:0; line-height:1.8">
+          <li><b style="color:#fff">앱 설치</b> — <b>Adobe Scan</b> 또는 <b>Microsoft Lens</b> (둘 다 무료, 아이폰·안드로이드 모두 가능)</li>
+          <li>앱을 열고 카메라로 <b style="color:#fff">펼친 페이지를 비추기</b> → 종이 테두리를 자동으로 잡아줘요</li>
+          <li>촬영 버튼 한 번 → 비뚤어진 부분도 <b style="color:#fff">자동으로 반듯하게 보정</b>돼요</li>
+          <li>다음 장을 계속 촬영 (여러 페이지를 <b style="color:#fff">하나의 PDF</b>로 모을 수 있어요)</li>
+          <li>다 찍으면 <b style="color:#fff">저장(PDF)</b> → 파일 이름은 '과목_단원'으로 (예: <span style="color:var(--brand2)">과학_1단원</span>)</li>
+          <li>그 PDF를 노트북LM에서 <b style="color:#fff">'소스 추가(＋)'</b>로 업로드하면 끝!</li>
+        </ol>
+
+        <div class="callout" style="margin-top:16px">
+          <div class="ic">💡</div>
+          <p><b>품질 좋게 + AI가 잘 읽게 하는 팁</b><br>
+          ☀️ <b style="color:#fff">창가 자연광</b>에서 찍으면 글씨가 훨씬 또렷해요 (그림자·손가락이 글자를 가리지 않게!)<br>
+          📚 책 전체를 한 번에 찍지 말고 <b style="color:#fff">단원(중단원)별로 파일을 나누기</b> → 시험 범위만 골라 올리기 쉬워요<br>
+          🔤 <b style="color:#fff">Adobe Scan</b>은 글자 인식(OCR)까지 해줘서, 노트북LM이 PDF 속 글을 더 정확히 읽어요<br>
+          🗂️ <b style="color:#fff">과목별로 파일을 구분</b>해두면, 과목별 노트북에 딱 맞게 넣을 수 있어요</p>
+        </div>
+
+        <p style="font-weight:800; margin:20px 0 4px; color:#fff">🍎 아이폰 사용자는 앱 설치 없이 '메모' 앱으로도 OK</p>
+        <ol style="color:var(--sub); padding-left:1.2em; font-size:.92rem; margin:0; line-height:1.8">
+          <li><b style="color:#fff">메모</b> 앱을 열고 <b style="color:#fff">새 메모</b> 만들기</li>
+          <li>아래쪽 <b style="color:#fff">클립(📎) 모양 아이콘</b> → <b style="color:#fff">'문서 스캔'</b> 누르기</li>
+          <li>책의 <b style="color:#fff">필요한 페이지를 전부 스캔</b> (카메라를 대면 자동 촬영, 한 장씩 이어서 찍기)</li>
+          <li>다 찍었으면 오른쪽 아래 <b style="color:#fff">노란색 체크(✓)</b> 표시 → '저장' 누르기</li>
+          <li>메모로 돌아와 위쪽 <b style="color:#fff">공유(↑) 화살표 아이콘</b> 누르기</li>
+          <li>앱 목록에서 <b style="color:#fff">'더보기(…)'</b> → <b style="color:#fff">'Google Drive'(구글 클라우드)</b> 선택 → <b style="color:#fff">저장</b></li>
+          <li>구글 드라이브에 저장된 그 PDF를 <b style="color:#fff">노트북LM에 업로드</b>하면 끝!</li>
+        </ol>
+        <div class="callout warn" style="margin-top:14px">
+          <div class="ic">⚠️</div>
+          <p><b>중요 — 한 과목은 '한 번에' 모아서 PDF로!</b><br>
+          페이지를 한 장씩 따로따로 저장하면 파일이 수십 개로 흩어져 관리가 힘들어요.
+          <b style="color:#fff">한 과목 분량을 이어서 한꺼번에 스캔한 뒤, 하나의 PDF로 정리해 저장</b>하는 게 훨씬 좋아요.
+          (시험 범위가 아주 많으면 중단원별로 나눠도 OK)</p>
+        </div>
+        <div class="callout warn" style="margin-top:14px">
+          <div class="ic">🚨</div>
+          <p><b>아이폰 사전 세팅 (꼭 먼저 해두세요!):</b> 메모 앱은 스캔한 사진이 <b style="color:#fff">사진첩에 자동 저장</b>되도록 켜져 있을 수 있어요. 그대로 두면 스캔할 때마다 사진이 쌓여 <b style="color:#fff">사진첩이 금방 꽉 차요.</b><br>
+          미리 <b style="color:#fff">설정 → 앱 → 메모 → 미디어 → '사진 앱에 저장' 끄기</b> 로 꺼두면 깔끔해요.</p>
+        </div>
+
+        <p style="font-weight:800; margin:20px 0 4px; color:#fff">🤖 안드로이드 사용자는 스캔 앱을 따로 받는 걸 추천</p>
+        <p class="muted" style="font-size:.92rem; margin:0">안드로이드는 기종마다 기본 기능이 달라서, 위에서 소개한 <b style="color:#fff">Adobe Scan</b>이나 <b style="color:#fff">Microsoft Lens</b> 같은 <b style="color:#fff">전용 스캔 앱을 따로 설치해서</b> 쓰는 걸 추천해요. (둘 다 무료이고, 자동 보정·글자 인식(OCR) 품질이 좋아요)</p>
+      </div>
     </div>
   </div>
 
@@ -380,12 +482,12 @@
     <div class="num">2</div>
     <div class="body">
       <h3><span class="tag t-cla">클로드</span><span class="tag t-note">노트북LM</span>소단원별로 쉬운 말 + 예시로 이해하기</h3>
-      <p class="muted">마인드맵의 <b style="color:#fff">소단원 순서대로</b> 하나씩 공부해요. 어려운 개념은 같은 뜻이지만 쉬운 말로 바꾸거나,
+      <p class="muted">마인드맵의 <b style="color:#fff">소단원 순서대로</b> 하나씩 공부해요.<br>어려운 개념은 같은 뜻이지만 쉬운 말로 바꾸거나,
       일상 예시로 설명받습니다. "외우기" 전에 "이해"가 먼저예요.</p>
 
       <div class="prompt">
         <div class="ph"><span class="dot" style="background:var(--claude)"></span><span class="name">클로드 / 노트북LM 프롬프트 (이해용)</span><button class="copy" onclick="copyP(this)">복사</button></div>
-<pre>나는 중학교 <span class="var">2</span>학년이야. "<span class="var">이온</span>" 개념을 설명해줘.
+<pre>나는 현재 중학교 <span class="var">N</span>학년이야. "<span class="var">이온</span>" 개념을 설명해줘.
 조건:
 1) 초등학생도 알 만한 쉬운 말로
 2) 일상 예시 1개로 비유
@@ -409,8 +511,7 @@
     <div class="num">3</div>
     <div class="body">
       <h3><span class="tag t-gem">제미나이</span><span class="tag t-note">노트북LM</span>기출 분석 — 빈출·헷갈리는·함정 개념 정리</h3>
-      <p class="muted">시중 문제집·기출 문제를 사진/PDF로 올리고, <b style="color:#fff">자주 나오는 것 · 헷갈리는 것 · 함정</b>을 뽑게 시켜요.
-      여기서 실수를 미리 잡으면 점수가 확 올라가요.</p>
+      <p class="muted">시중 문제집·기출 문제를 사진/PDF로 올리고, <b style="color:#fff">자주 나오는 것 · 헷갈리는 것 · 함정</b>을 뽑게 시켜요.<br>여기서 실수를 미리 잡으면 점수가 확 올라가요.</p>
 
       <div class="prompt">
         <div class="ph"><span class="dot" style="background:var(--gemini)"></span><span class="name">제미나이 / 노트북LM 프롬프트 (기출 분석)</span><button class="copy" onclick="copyP(this)">복사</button></div>
@@ -439,7 +540,7 @@
     <div class="body">
       <h3><span class="tag t-note">노트북LM</span>플래시카드로 암기 + 퀴즈로 실전 모의고사</h3>
       <p class="muted">노트북LM의 <b style="color:#fff">플래시카드</b>로 내가 약한 개념만 골라 외우고, <b style="color:#fff">퀴즈</b>로
-      실제 시험 난이도의 모의고사를 봅니다. 정형화된 문제만 말고 <b>다양한 유형</b>으로 만들어 달라고 하는 게 포인트예요.</p>
+      실제 시험 난이도의 모의고사를 봅니다.<br>정형화된 문제만 말고 <b>다양한 유형</b>으로 만들어 달라고 하는 게 포인트예요.</p>
 
       <div class="prompt">
         <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">노트북LM 프롬프트 (모의고사 — 다양한 유형)</span><button class="copy" onclick="copyP(this)">복사</button></div>
@@ -465,18 +566,16 @@
     <div class="num">5</div>
     <div class="body">
       <h3><span class="tag t-note">노트북LM</span>🎧 오디오 오버뷰 팟캐스트 — 흘려보내는 시간 활용</h3>
-      <p class="muted">등굣길·샤워·잘 때 등 <b style="color:#fff">손으로 공부 못 하는 시간</b>에 귀로 복습해요.
-      노트북LM의 <b>오디오 오버뷰</b>로 두 명이 대화하는 팟캐스트를 만듭니다.</p>
+      <p class="muted">등굣길·샤워·잘 때 등 <b style="color:#fff">손으로 공부 못 하는 시간</b>에 귀로 복습해요.<br>노트북LM의 <b>오디오 오버뷰</b>로 두 명이 대화하는 팟캐스트를 만듭니다.</p>
 
-      <div class="callout warn"><div class="ic">⚠️</div><p><b>중요 — 깊게 만들기:</b> 범위를 넓게 잡으면 "넓고 얕은" 개괄 방송이 돼서 공부가 안 돼요.
-      <b style="color:#fff">한 번에 소단원 1개</b>만, "깊이 있게" 만들어 달라고 하세요. 짧고 깊은 게 이겨요.</p></div>
+      <div class="callout warn"><div class="ic">⚠️</div><p><b>중요 — 길이가 제한돼요:</b> 노트북LM 오디오 오버뷰는 지금 한 번에 만들 수 있는 길이가 길지 않아요.<br>그래서 <b style="color:#fff">한 번에 '중단원 1개' 단위</b>로 만드는 걸 추천해요. 범위를 넓게 잡으면 "넓고 얕은" 방송이 돼서 공부가 안 되니, 좁고 깊게!</p></div>
 
       <div class="prompt">
         <div class="ph"><span class="dot" style="background:var(--notebook)"></span><span class="name">오디오 오버뷰 — 맞춤 설정(Customize) 입력</span><button class="copy" onclick="copyP(this)">복사</button></div>
-<pre>주제: "<span class="var">이온</span>" 소단원 1개만 깊게 다뤄줘.
-듣는 사람: 중학교 <span class="var">2</span>학년. 분량: 5~7분.
-넓게 훑지 말고, 이 소단원의 핵심 개념 3개를 예시와 함께 깊이 설명.
-시험에 잘 나오는 포인트와 흔한 실수를 꼭 짚어줘. 쉬운 말로.</pre>
+<pre>주제: "<span class="var">(중단원 제목 1개)</span>"만 다뤄줘. (오디오가 길게 안 나오니 딱 1개 중단원만!)
+듣는 사람: 현재 중학교 <span class="var">N</span>학년. 분량: 7~10분.
+이 중단원에 속한 소단원들의 핵심 개념을 예시와 함께 설명.
+넓게 훑지 말고, 시험에 잘 나오는 포인트와 흔한 실수를 꼭 짚어줘. 쉬운 말로.</pre>
       </div>
       <p class="muted" style="font-size:.88rem">📥 만든 오디오는 다운로드해서 음악 앱 재생목록처럼 모아두면, 이동 중에 과목별로 골라 들을 수 있어요.</p>
     </div>
@@ -488,8 +587,7 @@
   <div class="section-head">
     <p class="eyebrow">복붙용 프롬프트 모음</p>
     <h2>🗂️ 상황별 프롬프트 (그대로 복사하세요)</h2>
-    <p class="lead">외우지 마세요. 필요할 때 <b style="color:#fff">복사 버튼</b>을 누르고, <span class="var" style="color:var(--warn)">노란 글씨</span>만 내 과목·학년으로 바꾸면 됩니다.
-    아래는 토큰(=AI 사용량)을 적게 쓰면서 좋은 답을 받게 다듬은 프롬프트예요.</p>
+    <p class="lead">외우지 마세요. 필요할 때 <b style="color:#fff">복사 버튼</b>을 누르고, <span class="var" style="color:var(--warn)">노란 글씨</span>만 내 과목·학년으로 바꾸면 됩니다.<br>아래는 토큰(=AI 사용량)을 적게 쓰면서 좋은 답을 받게 다듬은 프롬프트예요.</p>
   </div>
 
   <div class="grid g2">
@@ -572,7 +670,7 @@
   <div class="section-head">
     <p class="eyebrow">AI에만 의지하지 않기</p>
     <h2>📖 교과서·학습지 병행 학습법</h2>
-    <p class="lead">AI는 빠르지만, 진짜 시험은 <b style="color:#fff">우리 학교 교과서·학습지</b>에서 나와요. AI로 이해한 다음
+    <p class="lead">AI는 빠르지만, 진짜 시험은 <b style="color:#fff">우리 학교 교과서·학습지</b>에서 나와요.<br>AI로 이해한 다음
     반드시 실제 책으로 세부 내용을 확인하는 "왕복 학습"을 하세요.</p>
   </div>
   <div class="grid g2">
@@ -603,9 +701,9 @@
   <p class="eyebrow">동기부여</p>
   <p class="quote">머리가 좋아서 A를 받는 게 아니라,<br><span>순서대로 끝까지 한 사람</span>이 A를 받아요.</p>
   <div class="grid g3" style="margin-top:34px; text-align:left">
-    <div class="card"><h3>😮‍💨 하기 싫은 날</h3><p class="muted">"딱 10분, 플래시카드 1세트만." 시작이 제일 어려워요. 일단 앉으면 됩니다.</p></div>
-    <div class="card"><h3>📉 점수가 안 오를 때</h3><p class="muted">틀린 문제 = 점수 올릴 보물. 맞은 문제 말고 <b style="color:#fff">틀린 것만</b> 다시 보세요.</p></div>
-    <div class="card"><h3>🏆 매일 한 칸</h3><p class="muted">플랜의 오늘 칸 하나만 지우면 성공. 작은 성공이 쌓여 올 A가 돼요.</p></div>
+    <div class="card"><h3>😮‍💨 하기 싫은 날</h3><p class="muted">"딱 10분, 플래시카드 1세트만."<br>시작이 제일 어려워요.<br>일단 앉으면 됩니다.</p></div>
+    <div class="card"><h3>📉 점수가 안 오를 때</h3><p class="muted">틀린 문제 = 점수 올릴 보물.<br>맞은 문제 말고 <b style="color:#fff">틀린 것만</b> 다시 보세요.</p></div>
+    <div class="card"><h3>🏆 매일 한 칸</h3><p class="muted">플랜의 오늘 칸 하나만 지우면 성공.<br>작은 성공이 쌓여 올 A가 돼요.</p></div>
   </div>
   <div class="prompt" style="max-width:680px; margin:26px auto 0; text-align:left">
     <div class="ph"><span class="dot" style="background:var(--brand2)"></span><span class="name">의욕 안 날 때 쓰는 프롬프트</span><button class="copy" onclick="copyP(this)">복사</button></div>
