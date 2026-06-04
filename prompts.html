@@ -96,18 +96,35 @@
   // 링크를 열면 항상 맨 위에서 시작 (목차 앵커 #가 있을 때만 해당 위치로 이동)
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   (function(){
-    function toTop(){
-      if (location.hash) return;                 // #앵커 링크면 그 위치로 두기
-      var h = document.documentElement;
-      var prev = h.style.scrollBehavior;
-      h.style.scrollBehavior = 'auto';           // 부드러운 스크롤 끄고 즉시 이동
-      window.scrollTo(0, 0);
-      h.style.scrollBehavior = prev;
+    var lock = true;
+    function validAnchor(){ var h = location.hash; return h && h.length > 1 && document.getElementById(h.slice(1)); }
+    function instantTop(){
+      var d = document.documentElement, p = d.style.scrollBehavior;
+      d.style.scrollBehavior = 'auto';
+      window.scrollTo(0, 0); d.scrollTop = 0; if (document.body) document.body.scrollTop = 0;
+      d.style.scrollBehavior = p;
     }
-    toTop();
+    function toTop(){ if (validAnchor()) return; if (lock) instantTop(); }
+
+    if (!validAnchor()) instantTop();             // 목차 깊은 링크(#p3 등)면 그 위치 유지
+
+    // 목차/↑목차로 클릭: 부드럽게 이동하되 주소에 #를 남기지 않음
+    document.addEventListener('click', function(e){
+      var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+      if (!a) return;
+      var el = document.getElementById(a.getAttribute('href').slice(1));
+      if (!el) return;
+      e.preventDefault(); lock = false;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
+    });
+    ['wheel','touchstart','keydown','mousedown'].forEach(function(ev){
+      window.addEventListener(ev, function(){ lock = false; }, { passive: true });
+    });
+
     document.addEventListener('DOMContentLoaded', toTop);
-    window.addEventListener('load', toTop);
-    window.addEventListener('pageshow', toTop);  // 뒤로가기/캐시 복원 대응(사파리)
+    window.addEventListener('pageshow', toTop);
+    window.addEventListener('load', function(){ toTop(); setTimeout(toTop, 60); setTimeout(toTop, 250); });
   })();
 </script>
 
