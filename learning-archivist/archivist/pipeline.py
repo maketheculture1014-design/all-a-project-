@@ -10,7 +10,7 @@ from pathlib import Path
 from archivist import config
 from archivist.analyze import analyze
 from archivist.archive import write_archive
-from archivist.audio import extract_audio
+from archivist.audio import prepare_for_stt
 from archivist.state import is_processed, mark
 from archivist.transcribe import transcribe
 
@@ -22,12 +22,13 @@ def _file_date(path: Path) -> str:
 def process_file(path: Path, source_label: str) -> Path:
     print(f"▶ 처리 시작: {path.name}  (출처: {source_label})")
 
-    wav = extract_audio(path)
+    audio_path, is_temp = prepare_for_stt(path)
     try:
         print("  · STT(받아쓰기) 중…")
-        tr = transcribe(wav)
+        tr = transcribe(audio_path)
     finally:
-        wav.unlink(missing_ok=True)
+        if is_temp:
+            audio_path.unlink(missing_ok=True)
     print(f"  · 전사 완료: {len(tr['segments'])}개 구간, {tr['duration']}초")
 
     meta = {
