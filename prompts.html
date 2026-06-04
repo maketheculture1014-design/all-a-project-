@@ -95,7 +95,20 @@
 <script>
   // 링크를 열면 항상 맨 위에서 시작 (목차 앵커 #가 있을 때만 해당 위치로 이동)
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  window.addEventListener('load', function(){ if (!location.hash) window.scrollTo(0, 0); });
+  (function(){
+    function toTop(){
+      if (location.hash) return;                 // #앵커 링크면 그 위치로 두기
+      var h = document.documentElement;
+      var prev = h.style.scrollBehavior;
+      h.style.scrollBehavior = 'auto';           // 부드러운 스크롤 끄고 즉시 이동
+      window.scrollTo(0, 0);
+      h.style.scrollBehavior = prev;
+    }
+    toTop();
+    document.addEventListener('DOMContentLoaded', toTop);
+    window.addEventListener('load', toTop);
+    window.addEventListener('pageshow', toTop);  // 뒤로가기/캐시 복원 대응(사파리)
+  })();
 </script>
 
 <header class="nav">

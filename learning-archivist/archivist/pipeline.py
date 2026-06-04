@@ -5,30 +5,59 @@
 """
 import argparse
 import datetime as dt
+import json
+import re
 from pathlib import Path
 
 from archivist import config
 from archivist.analyze import analyze
 from archivist.archive import write_archive
 from archivist.audio import prepare_for_stt
-from archivist.state import is_processed, mark
+from archivist.state import is_processed, mark, signature
 from archivist.transcribe import transcribe
 
 
-def _file_date(path: Path) -> str:
-    return dt.datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d")
+def _cache_path(path: Path) -> Path:
+    """전사본 캐시 경로 (STT 재실행 방지)."""
+    cache_dir = config.TRANSCRIPTS / "_cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    key = signature(path).replace(":", "_").replace("/", "_")
+    return cache_dir / f"{key}.json"
 
 
-def process_file(path: Path, source_label: str) -> Path:
-    print(f"▶ 처리 시작: {path.name}  (출처: {source_label})")
+def _transcribe_cached(path: Path) -> dict:
+    """캐시가 있으면 재사용, 없으면 STT 후 캐시에 저장."""
+    cache = _cache_path(path)
+    if cache.exists():
+        print("  · 캐시된 전사본 사용(STT 생략)")
+        return json.loads(cache.read_text(encoding="utf-8"))
 
     audio_path, is_temp = prepare_for_stt(path)
     try:
-        print("  · STT(받아쓰기) 중…")
+        print("  · STT(받아쓰기) 중… (large 모델은 시간이 걸립니다)")
         tr = transcribe(audio_path)
     finally:
         if is_temp:
             audio_path.unlink(missing_ok=True)
+    cache.write_text(json.dumps(tr, ensure_ascii=False), encoding="utf-8")
+    return tr
+
+
+def _file_date(path: Path) -> str:
+    """파일명 앞 YYMMDD가 있으면 실제 강의 날짜로, 없으면 수정시각으로."""
+    m = re.match(r"\D*(\d{6})\D", path.name)
+    if m:
+        try:
+            return dt.datetime.strptime(m.group(1), "%y%m%d").strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    return dt.datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d")
+
+
+def process_file(path: Path, source_label: str):
+    print(f"▶ 처리 시작: {path.name}  (출처: {source_label})")
+
+    tr = _transcribe_cached(path)
     print(f"  · 전사 완료: {len(tr['segments'])}개 구간, {tr['duration']}초")
 
     meta = {
@@ -36,6 +65,11 @@ def process_file(path: Path, source_label: str) -> Path:
         "date": _file_date(path),
         "source_label": source_label,
     }
+
+    if not config.ANTHROPIC_API_KEY:
+        print("  ⚠ ANTHROPIC_API_KEY 미설정 → 전사본만 캐시했습니다. "
+              "키 입력 후 다시 실행하면 분석부터 이어집니다.")
+        return None
 
     print("  · Claude 분석/구조화 중…")
     notes = analyze(tr["segments"], meta)
