@@ -1,0 +1,20 @@
+{
+  "image-advisor": ["피부", "헤어", "패션"],
+  "wellness-coach": ["운동", "수면", "식단", "워밍업·스트레칭"],
+  "health-advisor": ["부상", "치료·증상"],
+  "mind-coach": ["마인드·태도·감정", "동기부여", "자기계발·습관", "ADHD"],
+  "relationship-coach": ["비연애 관계", "연애", "화법"],
+  "thinking-partner": ["인사이트", "철학", "깊은 독서", "교훈·위인의 지혜"],
+  "faith-mentor": ["삶의 지침+구조", "위로·동행", "묵상(QT)", "상황별 지침"],
+  "culture-mentor": ["영화·영상", "음악(추천)", "취미", "가벼운 독서"],
+  "music-mentor": ["감상", "창작(작곡·미디·작사)"],
+  "language-tutor": ["영어", "일본어"],
+  "handwriting-coach": ["손글씨 교정"],
+  "writing-coach": ["에세이·블로그", "실용글", "창작", "작사"],
+  "money-strategist": ["재테크·예산", "투자", "절세", "부동산", "비즈니스"],
+  "college-mentor": ["학업 전략", "전공·진로", "캠퍼스·자원"],
+  "ai-mentor": ["프롬프트·컨텍스트", "에이전트 설계", "워크플로", "팀 개선"],
+  "politics-analyst": ["국내", "국제"],
+  "morning-briefer": ["브리핑 기록"],
+  "learning-archivist": ["강의 노트", "기타 아카이브"]
+}
