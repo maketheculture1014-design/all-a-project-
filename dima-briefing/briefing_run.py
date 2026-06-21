@@ -165,39 +165,24 @@ def _fetch_text(url: str, timeout=15, headers=None) -> str:
 
 
 def scrape_billboard() -> tuple[list[dict], str]:
-    """Billboard Hot 100 — 1순위: GitHub JSON, 2순위: billboard.com BeautifulSoup.
-    반환: (rows, source_label)  rows: [{"rank": int, "title": str, "artist": str}, ...]"""
+    """Billboard Hot 100 — billboard.com 직접 requests+BeautifulSoup 파싱.
 
-    # 1순위: GitHub JSON
+    구조 (2026-06 확인):
+      ul.o-chart-results-list-row
+        li.o-chart-results-list__item  (첫 번째) → rank 숫자 (span.c-label)
+        li.a-chart-result-item-container → h3.c-title (제목) + span.c-label (아티스트)
+
+    chart date: span 또는 h2 텍스트 'Week of Month DD, YYYY'
+
+    신선도 게이트: 최근 7일 이내가 아니면 '확인 불가' 반환.
+    반환: (rows, source_label)  rows: [{"rank": int, "title": str, "artist": str}, ...]
+    """
     try:
-        raw = _fetch_text(
-            "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/recent.json",
-            timeout=15,
-            headers={"User-Agent": "morning-briefer/1.0"}
-        )
-        data = json.loads(raw)
-        entries = data.get("data", data) if isinstance(data, dict) else data
-        results = []
-        for item in entries[:10]:
-            # 필드명 후보: rank/this_week, title/song, artist
-            rank = int(item.get("this_week", item.get("rank", item.get("Rank", 0))))
-            title = item.get("song", item.get("title", item.get("Title", ""))).strip()
-            artist = item.get("artist", item.get("Artist", "")).strip()
-            if rank and title:
-                results.append({"rank": rank, "title": title, "artist": artist})
-        if results:
-            return results, "GitHub JSON"
-    except Exception:
-        pass
+        from bs4 import BeautifulSoup
+    except ImportError:
+        return [{"rank": 0, "title": "Billboard Hot 100 수집 실패 (bs4 미설치)", "artist": ""}], "실패"
 
-    # 2순위: billboard.com BeautifulSoup
     try:
-        try:
-            from bs4 import BeautifulSoup
-            _bs4_available = True
-        except ImportError:
-            _bs4_available = False
-
         html = _fetch_text(
             "https://www.billboard.com/charts/hot-100/",
             timeout=20,
@@ -207,44 +192,97 @@ def scrape_billboard() -> tuple[list[dict], str]:
                 "Accept-Language": "en-US,en;q=0.9",
             }
         )
-        results = []
-        if _bs4_available:
-            soup = BeautifulSoup(html, "html.parser")
-            items = soup.select("li.o-chart-results-list__item")
-            for item in items[:10]:
-                rank_el = item.select_one("span.c-label.a-font-primary-bold-l")
-                title_el = item.select_one("h3#title-of-a-story")
-                artist_el = item.select_one("span.c-label.a-no-trucate") or item.select_one("span.a-truncate-ellipsis-2line")
-                if rank_el and title_el:
-                    rank_txt = rank_el.get_text(strip=True)
-                    if rank_txt.isdigit():
-                        results.append({
-                            "rank": int(rank_txt),
-                            "title": title_el.get_text(strip=True),
-                            "artist": artist_el.get_text(strip=True) if artist_el else "",
-                        })
-        else:
-            # BeautifulSoup 없으면 regex 폴백
-            rank_matches = re.findall(
-                r'id="title-of-a-story"[^>]*>\s*([^\n<]{1,100})\s*<', html
-            )
-            artist_matches = re.findall(
-                r'class="[^"]*a-no-trucate[^"]*"[^>]*>\s*([^\n<]{1,100})\s*<', html
-            )
-            for i, title in enumerate(rank_matches[:10]):
-                artist = artist_matches[i].strip() if i < len(artist_matches) else ""
-                results.append({"rank": i + 1, "title": title.strip(), "artist": artist})
-
-        if results:
-            return results, "billboard.com"
     except Exception as e:
-        pass
+        return [{"rank": 0, "title": f"Billboard Hot 100 수집 실패: {e}", "artist": ""}], "실패"
 
-    return [{"rank": 0, "title": "Billboard Hot 100 수집 실패 (직접 확인 권장)", "artist": ""}], "실패"
+    soup = BeautifulSoup(html, "html.parser")
+
+    # ── 차트 날짜 파싱 ──────────────────────────────────────────
+    # 형식: "Week of June 20, 2026"
+    chart_date_str = ""
+    chart_date_obj = None
+    MONTHS = {"January":1,"February":2,"March":3,"April":4,"May":5,"June":6,
+              "July":7,"August":8,"September":9,"October":10,"November":11,"December":12}
+
+    week_of_m = re.search(r'Week of (\w+)\s+(\d{1,2}),\s+(\d{4})', html)
+    if week_of_m:
+        mon_name, day, year = week_of_m.group(1), int(week_of_m.group(2)), int(week_of_m.group(3))
+        mon_num = MONTHS.get(mon_name)
+        if mon_num:
+            try:
+                chart_date_obj = date(year, mon_num, day)
+                chart_date_str = chart_date_obj.isoformat()
+            except Exception:
+                pass
+
+    if chart_date_obj:
+        delta = (TODAY - chart_date_obj).days
+        if delta > 7:
+            return [{"rank": 0,
+                     "title": f"Billboard Hot 100: 차트 날짜({chart_date_str})가 7일 초과 — 확인 불가",
+                     "artist": ""}], "확인 불가"
+
+    # ── 1~10위 파싱 ──────────────────────────────────────────────
+    # 각 곡은 ul.o-chart-results-list-row 하나에 대응
+    results = []
+    NOISE_TITLES = {
+        'Gains in Weekly Performance', 'Additional Awards', 'Credits',
+        'Debut Position', 'Peak Position', 'Chart History', 'Share',
+        'Awards', "Songwriter(s)", "Producer(s)", "Imprint/Label",
+    }
+    NOISE_LABELS = {'LW', 'PEAK', 'WEEKS', 'NEW', '-', '↑', '↓', 'LW: -', 'Award'}
+
+    rows = soup.select('ul.o-chart-results-list-row')
+    for row in rows:
+        # rank: 첫 번째 li 안의 숫자 span
+        rank_li = row.select_one('li.o-chart-results-list__item')
+        if not rank_li:
+            continue
+        rank_txt = ""
+        for sp in rank_li.select('span.c-label'):
+            t = sp.get_text(strip=True)
+            if re.match(r'^\d+$', t):
+                rank_txt = t
+                break
+        if not rank_txt:
+            continue
+        rank_num = int(rank_txt)
+
+        # title + artist: li.a-chart-result-item-container
+        container = row.select_one('li.a-chart-result-item-container')
+        if not container:
+            continue
+        h3 = container.select_one('h3.c-title')
+        if not h3:
+            continue
+        title = h3.get_text(strip=True)
+        if title in NOISE_TITLES:
+            continue
+
+        artist = ""
+        for sp in container.select('span.c-label'):
+            t = sp.get_text(strip=True)
+            if t and not re.match(r'^\d+$', t) and t not in NOISE_LABELS and len(t) > 2:
+                artist = t
+                break
+
+        results.append({"rank": rank_num, "title": title, "artist": artist})
+        if len(results) >= 10:
+            break
+
+    # 견고성: 10위까지 못 채우면 마크업 변경으로 간주, 파싱 실패로 드러냄
+    # (조용히 #1-only로 강등하지 않음)
+    if len(results) >= 10:
+        label = f"billboard.com · {chart_date_str}" if chart_date_str else "billboard.com"
+        return results, label
+
+    return [{"rank": 0,
+             "title": f"Billboard Hot 100 파싱 실패: {len(results)}/10위만 추출 (마크업 변경 의심)",
+             "artist": ""}], "실패"
 
 
 def scrape_circle_chart() -> list[dict]:
-    """멜론 TOP 100에서 1~5위 파싱. 반환: [{"rank": 1, "title": ..., "artist": ...}, ...]"""
+    """멜론 TOP 100에서 1~10위 파싱. 반환: [{"rank": 1, "title": ..., "artist": ...}, ...]"""
     try:
         html = _fetch_text(
             "https://www.melon.com/chart/index.htm",
@@ -262,7 +300,7 @@ def scrape_circle_chart() -> list[dict]:
 
         if titles and artists:
             return [{"rank": i+1, "title": clean(t), "artist": clean(a)}
-                    for i, (t, a) in enumerate(zip(titles[:5], artists[:5]))]
+                    for i, (t, a) in enumerate(zip(titles[:10], artists[:10]))]
         return [{"rank": 0, "title": "멜론 차트: 파싱 실패 (직접 확인 권장)", "artist": ""}]
     except Exception as e:
         return [{"rank": 0, "title": f"멜론 차트 수집 실패: {e}", "artist": ""}]
@@ -271,196 +309,97 @@ def scrape_circle_chart() -> list[dict]:
 def scrape_sound_on_sound() -> str:
     try:
         html = _fetch_text("https://www.soundonsound.com/")
-        # 기사 제목: <h2> 또는 <h3> 안의 텍스트
-        titles = re.findall(r'<h[23][^>]*>\s*<a[^>]*>([^<]{10,120})</a>', html)
-        if titles:
-            return f"Sound On Sound 최신: {titles[0].strip()}"
+        # 뉴스 기사 링크(/news/)의 앵커 텍스트에서 첫 유효 제목.
+        # (이전 정규식은 <h2>/<h3> 첫 <a>를 잡다가 이미지 파일명을 긁는 문제가 있었음)
+        for raw in re.findall(r'<a[^>]*href="[^"]*?/news/[^"]*"[^>]*>([\s\S]*?)</a>', html):
+            t = re.sub(r'<[^>]+>', '', raw)          # 내부 태그 제거
+            t = re.sub(r'\s+', ' ', t).strip().replace('&amp;', '&')
+            # 이미지 파일명·너무 짧은 텍스트 제외
+            if len(t) > 12 and not re.search(r'\.(jpe?g|png|gif|webp)$', t, re.I):
+                return f"Sound On Sound 최신: {t}"
         return "Sound On Sound: 제목 추출 실패"
     except Exception as e:
         return f"Sound On Sound 수집 실패: {e}"
 
 
-def _scrape_ufc_official() -> str:
-    """ufc.com 폴백 — kr.ufc.com 이벤트 목록 → 상세 페이지 결과 파싱.
-    파이터명: c-listing-fight__corner-given/family-name 클래스.
-    패턴: [A, A, B, C, C, D, ...] → 페어는 인덱스 0,2 / 3,5 / 6,8 (매 3칸씩, i와 i+2)."""
-    import html as _html_mod
-    try:
-        from ufc_ko_names import ko_name
-    except ImportError:
-        def ko_name(n): return n
-
-    MONTH_MAP = {
-        'january': 1, 'february': 2, 'march': 3, 'april': 4,
-        'may': 5, 'june': 6, 'july': 7, 'august': 8,
-        'september': 9, 'october': 10, 'november': 11, 'december': 12
-    }
-
-    def slug_to_date(slug):
-        m = re.search(
-            r'(january|february|march|april|may|june|july|august|'
-            r'september|october|november|december)-(\d+)-(\d{4})', slug
-        )
-        if m:
-            from datetime import date as _date
-            return _date(int(m.group(3)), MONTH_MAP[m.group(1)], int(m.group(2)))
-        return None
-
-    base = "https://kr.ufc.com"
-    try:
-        events_html = _fetch_text(
-            f"{base}/events",
-            timeout=12,
-            headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
-        )
-    except Exception as e:
-        return f"UFC (ufc.com 폴백 실패): {e}"
-
-    all_slugs: list = []
-    seen_set: set = set()
-    for lnk in re.findall(r'href="(/event/[a-z0-9\-]+)"', events_html):
-        if lnk not in seen_set:
-            seen_set.add(lnk)
-            all_slugs.append(lnk)
-
-    if not all_slugs:
-        return "UFC: 이벤트 목록 파싱 실패"
-
-    # 날짜 파싱 가능한 slug 중 오늘 이전 가장 최근 이벤트 선택
-    past_dated = []
-    for slug in all_slugs:
-        d = slug_to_date(slug)
-        if d and d <= TODAY:
-            past_dated.append((d, slug))
-    past_dated.sort(reverse=True)
-
-    recent_slug = past_dated[0][1] if past_dated else all_slugs[0]
-    event_name = recent_slug.replace("/event/", "").replace("-", " ").title()
-
-    try:
-        detail_html = _fetch_text(
-            f"{base}{recent_slug}",
-            timeout=12,
-            headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
-        )
-    except Exception as e:
-        return f"UFC 최근 이벤트: {event_name} (상세 접속 실패: {e})"
-
-    given = re.findall(
-        r'class="c-listing-fight__corner-given-name"[^>]*>([^<]+)<', detail_html
-    )
-    family = re.findall(
-        r'class="c-listing-fight__corner-family-name"[^>]*>([^<]+)<', detail_html
-    )
-
-    def clean(s): return _html_mod.unescape(s).strip()
-
-    fighters_raw = [f"{clean(g)} {clean(f)}" for g, f in zip(given, family)]
-    methods = re.findall(
-        r'class="c-listing-fight__result-text method"[^>]*>([^<]+)<', detail_html
-    )
-    rounds = re.findall(
-        r'class="c-listing-fight__result-text round"[^>]*>([^<]+)<', detail_html
-    )
-
-    # 패턴: [A, A, B, C, C, D, ...] → 매 3칸, i=0,3,6... 에서 f1=i, f2=i+2
-    results = []
-    fight_idx = 0
-    i = 0
-    while i + 2 < len(fighters_raw) and fight_idx < 3:
-        f1 = ko_name(fighters_raw[i])
-        f2 = ko_name(fighters_raw[i + 2])
-        if f1 == f2:
-            i += 3
-            continue
-        line = f"{f1} vs {f2}"
-        if fight_idx < len(methods):
-            line += f" — {methods[fight_idx]}"
-            if fight_idx < len(rounds):
-                line += f" R{rounds[fight_idx]}"
-        else:
-            line += " (결과 미공개)"
-        results.append(line)
-        fight_idx += 1
-        i += 3
-
-    if results:
-        return f"UFC 최근 결과 ({event_name}) [ufc.com]:\n" + "\n".join(results)
-    return f"UFC 최근 이벤트: {event_name} (결과 파싱 실패 — 직접 확인 권장)"
-
-
 def scrape_ufc() -> str:
-    """ufcstats.com 표 구조 기반 파싱. 차단 시 ufc.com 폴백."""
+    """ESPN 비공식 JSON으로 최근/임박 UFC 이벤트의 '주목 경기'만 추려 브리핑.
+
+    - ufcstats/tapology는 데이터센터 IP를 봇 차단(403)해 CI에서 불가 → ESPN JSON 사용.
+    - 선별 기준: 메인카드 경기(= 사실상 랭킹권) + 한국인 참가 경기. 여성 경기는 제외.
+      (공식 랭킹 1~10 명단은 가드레일 내 신뢰 가능한 무료·최신 소스가 없어 메인카드로 근사.
+       한국인은 ESPN 선수 국기(kor)로 식별해 카드 위치와 무관하게 예외 포함.)
+    - 이벤트명·날짜를 함께 표기해 stale을 드러냄. 실패는 실패로 보고(조용한 강등 금지).
+    """
     try:
         from ufc_ko_names import ko_name
     except ImportError:
         def ko_name(n): return n
 
-    # ufcstats.com 시도
     try:
-        html = _fetch_text(
-            "https://ufcstats.com/statistics/events/completed",
-            timeout=12,
-            headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
-        )
-    except Exception:
-        # 차단 또는 연결 불가 — ufc.com 폴백
-        return _scrape_ufc_official()
+        d = json.loads(_fetch_text(
+            "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard",
+            timeout=15))
+    except Exception as e:
+        return f"UFC 수집 실패 (ESPN API): {e} (직접 확인 권장)"
 
-    rows = re.findall(r'<tr[^>]*>([\s\S]*?)</tr>', html)
-    recent_event_url = None
-    recent_event_name = None
-    for row in rows:
-        link_m = re.search(r'href="(http://ufcstats\.com/event-details/[a-z0-9]+)"[^>]*>([^<]+)<', row)
-        if link_m:
-            recent_event_url = link_m.group(1)
-            recent_event_name = link_m.group(2).strip()
-            break
+    events = d.get("events") or []
+    if not events:
+        return "UFC 수집 실패 (ESPN: 이벤트 없음 — 직접 확인 권장)"
+    ev = events[0]
+    name = ev.get("name", "UFC 이벤트")
+    date_iso = (ev.get("date") or "")[:10]
+    comps = ev.get("competitions") or []
 
-    if not recent_event_url:
-        return _scrape_ufc_official()
+    MAIN_CARD = 5  # UFC 메인카드 = 통상 상위 5경기 (competitions 배열 끝쪽)
 
-    try:
-        detail_html = _fetch_text(recent_event_url, timeout=12)
-    except Exception:
-        return f"UFC 최근 이벤트: {recent_event_name} (상세 페이지 접속 실패)"
+    def flag_isos(comp):
+        out = []
+        for x in comp.get("competitors", []):
+            href = (((x.get("athlete") or {}).get("flag")) or {}).get("href", "")
+            m = re.search(r'/([a-z]{3})\.png', href.lower())
+            out.append(m.group(1) if m else "")
+        return out
 
-    fight_rows = re.findall(
-        r'<tr[^>]*class="[^"]*b-fight-details__table-row[^"]*"[^>]*>([\s\S]*?)</tr>',
-        detail_html
-    )
-    if not fight_rows:
-        fight_rows = re.findall(r'<tr[^>]*>([\s\S]*?)</tr>', detail_html)
+    def is_women(comp):
+        abbr = ((comp.get("type") or {}).get("abbreviation") or "").upper()
+        return abbr.startswith("W ") or "WOMEN" in abbr
 
-    results = []
-    for row in fight_rows[:8]:
-        tds = re.findall(r'<td[^>]*>([\s\S]*?)</td>', row)
-        if len(tds) < 5:
+    def nm(x):
+        return ko_name(((x.get("athlete") or {}).get("displayName") or "").strip())
+
+    def fight_line(comp, korean):
+        cs = comp.get("competitors", [])
+        done = comp.get("status", {}).get("type", {}).get("completed")
+        win = [x for x in cs if x.get("winner")]
+        lose = [x for x in cs if not x.get("winner")]
+        core = (f"{nm(win[0])} def. {nm(lose[0])}"
+                if (done and win and lose) else f"{nm(cs[0])} vs {nm(cs[1])}")
+        wc = (comp.get("type") or {}).get("abbreviation") or ""
+        line = f"{core} [{wc}]" if wc else core
+        return f"{line} (한국)" if korean else line
+
+    n = len(comps)
+    selected = []  # (index, comp, korean)
+    for i, comp in enumerate(comps):
+        if len(comp.get("competitors", [])) < 2:
             continue
-        fighters_raw = re.findall(r'<a[^>]*>([^<]+)</a>', tds[1]) if len(tds) > 1 else []
-        if len(fighters_raw) < 2:
-            fighters_raw = re.findall(r'<p[^>]*>([^<\n]{2,40})</p>', tds[1]) if len(tds) > 1 else []
-        if len(fighters_raw) < 2:
+        if is_women(comp):          # 여성 경기는 무조건 제외
             continue
-        f1 = ko_name(fighters_raw[0].strip())
-        f2 = ko_name(fighters_raw[1].strip())
-        weight_class = re.sub(r'<[^>]+>', '', tds[2]).strip() if len(tds) > 2 else ""
-        method = re.sub(r'<[^>]+>', '', tds[3]).strip() if len(tds) > 3 else ""
-        rnd = re.sub(r'<[^>]+>', '', tds[4]).strip() if len(tds) > 4 else ""
-        line = f"{f1} vs {f2}"
-        if weight_class:
-            line += f" [{weight_class}]"
-        if method:
-            line += f" — {method}"
-            if rnd:
-                line += f" R{rnd}"
-        results.append(line)
-        if len(results) >= 3:
-            break
+        korean = "kor" in flag_isos(comp)
+        if i >= n - MAIN_CARD or korean:   # 메인카드 OR 한국인
+            selected.append((i, comp, korean))
 
-    if results:
-        return f"UFC 최근 결과 ({recent_event_name}):\n" + "\n".join(results)
-    return f"UFC 최근 이벤트: {recent_event_name} (결과 상세 파싱 실패)"
+    if not selected:
+        return f"UFC: {name} ({date_iso}) — 남자 메인카드·한국인 경기 없음"
+
+    selected.sort(key=lambda t: -t[0])  # 메인이벤트(배열 끝)가 먼저
+    any_done = any(c.get("status", {}).get("type", {}).get("completed")
+                   for _, c, _ in selected)
+    head = "UFC 최근 결과" if any_done else "UFC 다가오는 카드"
+    tail = f" ({name}, {date_iso})" if date_iso else f" ({name})"
+    lines = [fight_line(c, k) for _, c, k in selected]
+    return f"{head}{tail}:\n" + "\n".join(lines)
 
 
 def scrape_rising_artists() -> list[dict]:
