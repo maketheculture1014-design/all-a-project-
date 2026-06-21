@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.dima.briefing.boot</string>
+
+  <!-- 전원 ON(콜드 부팅/로그인) 시 1회 실행. 네트워크 올라올 시간 20초 대기 후
+       기존 run_briefing.sh를 그대로 호출(잠자기 해제용 ~/.wakeup와 동일 스크립트).
+       하루 1회 가드(.last_briefed)가 wake/boot 중복을 자동으로 막는다. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>sleep 20; exec /Users/maketheculture/my-workspace/dima-briefing/run_briefing.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/maketheculture/my-workspace/dima-briefing</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/maketheculture/.local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- 매일 오전 7시 정각에도 실행. 노트북이 켜져 있으면(부팅/깨움 이벤트가 없어도)
+       7시에 한 번 발동 → '디스플레이만 꺼진 채 계속 켜둔' 경우까지 커버.
+       하루 1회 가드가 boot/wake/7시 중복을 자동으로 막는다. -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key><integer>7</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/maketheculture/my-workspace/dima-briefing/output/boot.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/maketheculture/my-workspace/dima-briefing/output/boot.log</string>
+</dict>
+</plist>
